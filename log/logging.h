@@ -1,12 +1,12 @@
 //
-// Created by dodo on 2020/6/21.
+// Created by wangyu on 2020/6/21.
 //
 
-#ifndef _WS_LOGGING_H_
-#define _WS_LOGGING_H_
+#ifndef WS_LOGGING_H
+#define WS_LOGGING_H
 
 #include <cstdarg>
 
 void debug(const char* fmt, ...);
 
-#endif //_WS_LOGGING_H_
+#endif //WS_LOGGING_H

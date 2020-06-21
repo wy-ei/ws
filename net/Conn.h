@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/20.
+// Created by wangyu on 2020/6/20.
 //
 
-#ifndef EX1_CONN_H
-#define EX1_CONN_H
+#ifndef WS_CONN_H
+#define WS_CONN_H
 
 #include <utility>
 #include <atomic>
@@ -35,13 +35,6 @@ public:
     using TimeoutCallback = std::function<void(size_t)>;
     using CloseCallback = std::function<void(const SP<Conn>&)>;
     using ErrorCallback = std::function<void()>;
-
-    static const EventName<1> EVENT_CONNECT;
-    static const EventName<2> EVENT_MESSAGE;
-    static const EventName<3> EVENT_CLOSE;
-    static const EventName<4> EVENT_TIMEOUT;
-    static const EventName<5> EVENT_ERROR;
-
 public:
     Conn() = delete;
     Conn(EventLoop* loop, const Socket& sock, SocketAddress peer_address);
@@ -105,4 +98,4 @@ private:
     Buffer write_buffer_;
 };
 
-#endif //EX1_CONN_H
+#endif //WS_CONN_H

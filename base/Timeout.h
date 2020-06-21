@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/17.
+// Created by wangyu on 2020/6/17.
 //
 
-#ifndef _WS_TIMEOUT_H_
-#define _WS_TIMEOUT_H_
+#ifndef WS_TIMEOUT_H
+#define WS_TIMEOUT_H
 
 #include <memory>
 #include <queue>
@@ -89,4 +89,4 @@ private:
 };
 
 
-#endif //_WS_TIMEOUT_H_
+#endif //WS_TIMEOUT_H

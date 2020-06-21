@@ -1,5 +1,5 @@
 //
-// Created by dodo on 2020/6/17.
+// Created by wangyu on 2020/6/17.
 //
 
 #ifndef WS_TCPSERVER_H
@@ -15,9 +15,6 @@
 class TCPServer {
     using ConnectionCallback = typename Conn::ConnectCallback;
 public:
-    static const EventName<1> EVENT_CONNECTION;
-    static const EventName<5> EVENT_ERROR;
-
     TCPServer() = default;
     bool listen(const std::string& host, unsigned short port);
 

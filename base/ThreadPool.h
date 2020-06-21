@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/13.
+// Created by wangyu on 2020/6/13.
 //
 
-#ifndef _WS_THREADPOOL_H_
-#define _WS_THREADPOOL_H_
+#ifndef WS_THREADPOOL_H
+#define WS_THREADPOOL_H
 
 #include "../net/comm.h"
 #include <vector>
@@ -84,4 +84,4 @@ private:
 };
 
 
-#endif //_WS_THREADPOOL_H_
+#endif //WS_THREADPOOL_H

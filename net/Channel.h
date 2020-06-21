@@ -1,9 +1,5 @@
-//
-// Created by dodo on 2020/6/16.
-//
-
-#ifndef EX1_CHANNEL_H
-#define EX1_CHANNEL_H
+#ifndef WS_CHANNEL_H
+#define WS_CHANNEL_H
 
 #include <array>
 #include <sys/epoll.h>
@@ -78,4 +74,4 @@ private:
 };
 
 
-#endif //EX1_CHANNEL_H
+#endif //WS_CHANNEL_H

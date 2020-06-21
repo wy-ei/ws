@@ -1,5 +1,5 @@
 //
-// Created by dodo on 2020/6/20.
+// Created by wangyu on 2020/6/20.
 //
 
 #include "Conn.h"
@@ -17,9 +17,6 @@ Conn::Conn(EventLoop* loop, const Socket& sock, SocketAddress  peer_address)
 
 Conn::~Conn() {
     debug("conn %d die\n", fd());
-//    if(channel_){
-//        channel_->close();
-//    }
 }
 
 ssize_t Conn::read(char *buffer, size_t size) {

@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/13.
+// Created by wangyu on 2020/6/13.
 //
 
-#ifndef _WS_SERVER_H_
-#define _WS_SERVER_H_
+#ifndef WS_SERVER_H
+#define WS_SERVER_H
 
 #include <sys/socket.h>
 #include <atomic>
@@ -47,4 +47,4 @@ private:
 };
 
 
-#endif //_WS_SERVER_H_
+#endif //WS_SERVER_H

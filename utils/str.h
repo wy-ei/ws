@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/21.
+// Created by wangyu on 2020/6/21.
 //
 
-#ifndef _WS_STR_H_
-#define _WS_STR_H_
+#ifndef WS_STR_H
+#define WS_STR_H
 
 #include <algorithm>
 #include <string>
@@ -34,4 +34,4 @@ void split(const char* beg, const char* end, char sep, Fn fn){
 }// end namespace ws
 
 
-#endif // _WS_STR_H_
+#endif // WS_STR_H

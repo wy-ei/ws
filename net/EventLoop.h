@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/18.
+// Created by wangyu on 2020/6/18.
 //
 
-#ifndef EX1_EVENTLOOP_H
-#define EX1_EVENTLOOP_H
+#ifndef WS_EVENTLOOP_H
+#define WS_EVENTLOOP_H
 
 #include <vector>
 #include <functional>
@@ -62,4 +62,4 @@ private:
     typename std::thread::id tid_;
 };
 
-#endif //EX1_EVENTLOOP_H
+#endif //WS_EVENTLOOP_H

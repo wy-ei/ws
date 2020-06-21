@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/13.
+// Created by wy on 2020/6/13.
 //
 
-#ifndef _WS_COMM_H_
-#define _WS_COMM_H_
+#ifndef WS_COMM_H
+#define WS_COMM_H
 
 
 #include <sys/socket.h>
@@ -42,10 +42,7 @@ using Params = std::unordered_map<std::string, std::string>;
 const int KEEPALIVE_TIMEOUT_SECOND = 5;
 const size_t REQUEST_BUF_LEN = 4096;
 
-template <int name>
-struct EventName{};
-
 #define SP std::shared_ptr
 
 
-#endif //_WS_COMM_H_
+#endif //WS_COMM_H

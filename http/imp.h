@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/14.
+// Created by wangyu on 2020/6/14.
 //
 
-#ifndef _WS_IMP_H_
-#define _WS_IMP_H_
+#ifndef WS_IMP_H
+#define WS_IMP_H
 
 #include "../net/comm.h"
 #include <unordered_map>
@@ -43,4 +43,4 @@ const char *find_content_type(const std::string &, const std::unordered_map<std:
 } // end namespace imp
 
 
-#endif //_WS_IMP_H_
+#endif //WS_IMP_H

@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/16.
+// Created by wangyu on 2020/6/16.
 //
 
-#ifndef _WS_EPOLL_H_
-#define _WS_EPOLL_H_
+#ifndef WS_EPOLL_H
+#define WS_EPOLL_H
 
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
@@ -31,7 +31,6 @@ public:
     }
 
     std::vector<SP<Channel>> wait(int timeout_ms);
-
     std::vector<SP<Channel>> get_activate_channels(int n);
 
     void add_channel(const SP<Channel>& channel);
@@ -49,4 +48,4 @@ private:
 };
 
 
-#endif //_WS_EPOLL_H_
+#endif //WS_EPOLL_H

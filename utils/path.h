@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/15.
+// Created by wangyu on 2020/6/15.
 //
 
-#ifndef _WLIB_PATH_H_
-#define _WLIB_PATH_H_
+#ifndef _WLIB_PATH_H
+#define _WLIB_PATH_H
 
 #include <string>
 #include <vector>
@@ -21,4 +21,4 @@ std::string normalize(const std::string &path);
 }
 
 
-#endif //_WLIB_PATH_H_
+#endif //_WLIB_PATH_H

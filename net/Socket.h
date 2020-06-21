@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/16.
+// Created by wangyu on 2020/6/16.
 //
 
-#ifndef _WS_SOCKET_H_
-#define _WS_SOCKET_H_
+#ifndef WS_SOCKET_H
+#define WS_SOCKET_H
 
 #include "comm.h"
 #include <sys/socket.h>
@@ -69,4 +69,4 @@ private:
 };
 
 
-#endif //_WS_SOCKET_H_
+#endif //WS_SOCKET_H

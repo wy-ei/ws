@@ -1,9 +1,9 @@
 //
-// Created by dodo on 2020/6/13.
+// Created by wangyu on 2020/6/13.
 //
 
-#ifndef _WS_REQUEST_H_
-#define _WS_REQUEST_H_
+#ifndef WS_REQUEST_H
+#define WS_REQUEST_H
 
 #include <map>
 #include <utility>
@@ -88,4 +88,4 @@ private:
 };
 
 
-#endif //_WS_REQUEST_H_
+#endif //WS_REQUEST_H
