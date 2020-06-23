@@ -62,7 +62,13 @@ FlushCallback logging_flush = default_flush_callback;
 
 LEVEL logging_level = TRACE;
 
-// frontend
+
+
+using std::placeholders::_1;
+using std::placeholders::_2;
+
+
+// 日志系统的前端主要构件，收集用户的日志内容，格式化后传给后端来保存
 class Logger {
 public:
     Logger(const char *basename, int line, LEVEL level)
@@ -102,7 +108,6 @@ public:
             abort();
         }
     }
-
 private:
     std::ostringstream stream_;
     LEVEL level_;
@@ -110,9 +115,11 @@ private:
     int line_;
 };
 
-// backend
-// 在另外一个线程中每隔三面刷新一次，把内容刷到磁盘上去
+// 下面为日志系统的后端部分，负责接收前端传来的日志内容，并存储到磁盘上
+// 主要思路是使用多个缓冲区接收前端传来的日志，然后在另一个线程中每隔三秒刷新一次，把内容刷到磁盘上去
 
+
+// 固定大小的 buffer，用于缓存日志数据
 template<size_t SIZE>
 class FixedBuffer {
 public:
@@ -125,34 +132,25 @@ public:
         return len;
     }
 
-    size_t writable_size() {
-        return SIZE - write_index_;
-    }
-
-    size_t size() {
-        return write_index_;
-    }
-
+    size_t writable_size() { return SIZE - write_index_; }
+    size_t size() { return write_index_; }
     char *data() { return buffer_; }
-
-    void reset() {
-        write_index_ = 0;
-    }
+    void reset() { write_index_ = 0; }
 
 private:
     char buffer_[SIZE]{};
     size_t write_index_{0};
 };
 
-static const int kBufferSize = 4000;
+static const int kBufferSize = 4096;
 using Buffer = FixedBuffer<kBufferSize>;
 
 
+// 用于管理日志文件，向日志文件中写入 buffer
 class LogFile {
 public:
     void init(const std::string &program_name) {
         program_name_ = program_name;
-
         roll_file();
     }
 
@@ -168,7 +166,8 @@ public:
 
     std::string build_filename(){
         std::string filename;
-        // [program_name]-[time]-[host].log
+        // 格式为： [program_name]-[time]-[host].log
+
         filename += program_name_;
 
         char buffer[256];
@@ -203,7 +202,7 @@ public:
         }
         ssize_t n = writev(fd_, vec, buffers.size());
         file_size_ += n;
-        // 1GB
+        // 超过 1GB 后切换文件
         if(file_size_ > 1024*1024*1024){
             roll_file();
         }
@@ -217,9 +216,8 @@ private:
     ssize_t file_size_ { 0 };
 };
 
-using std::placeholders::_1;
-using std::placeholders::_2;
 
+// log 的后端部分，用于接收前端传来的日志，在合适的时候把内容交给 LogFile 写入硬盘
 class Logging {
 public:
     explicit Logging(const std::string& program_name) {
@@ -248,8 +246,8 @@ public:
 private:
     void append(const char *message, size_t len) {
         /**
-         * 写入 free_buffers_.front() 如果已经满了将其加入 free_buffers_ 尾部
-         * 取 free_buffers_ 中下一个 buffer 进行写入
+         * 写入 current_buffer_ 如果已经满了将其加入 free_buffers_ 尾部
+         * 取 free_buffers_ 中下一个 buffer 作为新的 current_buffer_
          */
         std::unique_lock<std::mutex> lock(mutex_);
 
@@ -282,6 +280,7 @@ private:
         }
     }
 
+    // 接收条件变量的通知或者每隔 flush_interval_ 秒就把现在已经写入的数据保存到磁盘上
     void thread_func() {
         while(!stop_){
             std::list<std::shared_ptr<Buffer>> buffers_to_write;
@@ -298,12 +297,12 @@ private:
                 }
 
                 if (buffers_to_write.empty()) {
-                    return;
+                    continue;
                 }
             }
 
             if (buffers_to_write.size() > 20) {
-                // std::cerr << "too many logs\n";
+                std::cerr << "warning: ws::logging - log too frequency\n";
             }
 
             file_.write(buffers_to_write);
@@ -341,13 +340,16 @@ std::shared_ptr<Logging> p_logging;
 } // end namespace detail
 
 
+
+// 下面是暴露给用户的接口
+
+// 启动后端，默认前端会把内容写到标准输出
 inline void init(const std::string& program_name){
     static int n = 0;
     if(n != 0){
         return;
     }
     n = 1;
-
     detail::p_logging = std::make_shared<detail::Logging>(program_name);
 }
 
@@ -355,11 +357,8 @@ inline void set_level(LEVEL level){
     detail::logging_level = level;
 }
 
+// 停止后端，此后日志会写入到标准输出
 inline void stop(){
-    static int n = 0;
-    if(n != 0){
-        return;
-    }
     if(detail::p_logging == nullptr){
         return;
     }else{
@@ -371,6 +370,12 @@ inline void stop(){
 } // end namespace ws
 
 
+/*
+ * 用法如下：
+ *
+ * LOG_INFO << "hello world";
+ */
+
 #define LOG_TRACE if(ws::logging::detail::logging_level <=ws::logging::TRACE )  ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::TRACE)
 #define LOG_DEBUG if(ws::logging::detail::logging_level <=ws::logging::DEBUG ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::DEBUG)
 #define LOG_INFO if(ws::logging::detail::logging_level <=ws::logging::INFO ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::INFO)
@@ -378,8 +383,7 @@ inline void stop(){
 #define LOG_ERROR ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::ERROR)
 #define LOG_FATAL ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::FATAL)
 
-#define CHECK(e) if(!(e)) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::INFO)
-
+// TODO 替换掉原来使用的 debug 函数
 //void debug(const char *fmt, ...);
 
 #endif //WS_LOGGING_H
