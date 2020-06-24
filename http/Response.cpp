@@ -124,6 +124,7 @@ bool Response::keep_alive() {
 }
 
 void Response::reset() {
+    LOG_DEBUG << "reset response";
     status_ = -1;
     headers.clear();
     body.clear();

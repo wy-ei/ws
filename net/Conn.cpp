@@ -6,17 +6,18 @@
 #include <thread>
 #include <utility>
 #include "EventLoop.h"
+#include "../log/logging.h"
 
 
 
 Conn::Conn(EventLoop* loop, const Socket& sock, SocketAddress  peer_address)
     :sock_(sock), loop_(loop), peer_address_(std::move(peer_address)),
     channel_(std::make_shared<Channel>(loop, sock.fd())){
-    debug("new client: %d\n", sock.fd());
+    LOG_DEBUG << "new conn:" << sock.fd();
 }
 
 Conn::~Conn() {
-    debug("conn %d die\n", fd());
+    LOG_DEBUG << "conn die:" << sock_.fd();
 }
 
 ssize_t Conn::read(char *buffer, size_t size) {
@@ -24,7 +25,6 @@ ssize_t Conn::read(char *buffer, size_t size) {
 }
 
 ssize_t Conn::write(const char *buffer, size_t size) {
-    debug("append %d\n", size);
     write_buffer_.append(buffer, size);
     if(!channel_->is_writing()){
         channel_->enable_writing();
@@ -33,10 +33,9 @@ ssize_t Conn::write(const char *buffer, size_t size) {
 }
 
 void Conn::handle_read() {
-    debug("Conn::handle_read\n");
+    LOG_DEBUG << "Conn::handle read";
     char buffer[65536];
     ssize_t n = read(buffer, 65536);
-    // debug("read %d bytes\n", n);
     if(n > 0){
         if(message_callback_){
             message_callback_(buffer, n);
@@ -49,7 +48,7 @@ void Conn::handle_read() {
 }
 
 void Conn::handle_write() {
-    debug("Conn::handle write\n");
+    LOG_DEBUG << "Conn::handle write";
     loop_->assert_in_loop_thread();
     if(!channel_->is_writing()){
         assert(0); // this shouldn't happen
@@ -73,7 +72,7 @@ void Conn::handle_write() {
 }
 
 void Conn::handle_close() {
-    debug("handle close\n");
+    LOG_DEBUG << "handle close";
 
     assert(state_ == State::k_disconnecting || state_ == State::k_connected);
 
@@ -87,7 +86,7 @@ void Conn::handle_close() {
 }
 
 void Conn::handle_error() {
-    debug("handle error:");
+    LOG_DEBUG << "handle error";
 }
 
 
@@ -101,7 +100,6 @@ void Conn::init() {
 }
 
 void Conn::setup_channel() {
-    debug("setup channel %d\n", fd());
     channel_->set_read_callback(std::bind(&Conn::handle_read, this));
     channel_->set_write_callback(std::bind(&Conn::handle_write, this));
     channel_->set_error_callback(std::bind(&Conn::handle_error, this));
@@ -111,7 +109,7 @@ void Conn::setup_channel() {
 
 
 void Conn::destroy() {
-    debug("conn destroy %d\n", fd());
+    LOG_DEBUG << "conn destroy:" << fd();
     loop_->assert_in_loop_thread();
     if(state_ == State::k_connected){
         state_ = State::k_disconnected;
@@ -132,7 +130,6 @@ void Conn::shutdown() {
 
     if(state_.compare_exchange_strong(connected, disconnecting)){
         loop_->run_in_loop([this]{
-           //if(!channel_->is_writing()){
            // no more data to write
             if(write_buffer_.readable_size() == 0){
                sock_.shutdown(SHUT_WR);

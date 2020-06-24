@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include "../log/logging.h"
 
 #include "EventLoop.h"
 
@@ -10,7 +11,7 @@ __thread EventLoop* this_thread_event_loop = nullptr;
 
 EventLoop::EventLoop() :quit_(false){
     if(this_thread_event_loop){
-        debug("more than one event loop in this thread.");
+        LOG_ERROR << "more than one event loop in this thread.";
         pthread_exit(nullptr);
     }else{
         this_thread_event_loop = this;
@@ -42,7 +43,7 @@ void EventLoop::loop() {
     while (!quit_){
         active_channels = epoll_.wait(10000);
         for(auto& channel: active_channels){
-            debug("epoll: %d  active channel %d\n", epoll_.fd(), channel->fd());
+            LOG_DEBUG << "epoll:" << epoll_.fd() << "  active channel:" << channel->fd();
             channel->handle_event();
         }
         run_pending_functors();

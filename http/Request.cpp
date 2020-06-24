@@ -61,7 +61,6 @@ void Request::execute_parse(const char *data, size_t len) {
         if(current_state_ == PARSE_STATE::REQUEST_LINE){
             const char* crlf = buffer_.find(CRLF, 2);
             if(!crlf){
-                debug("not a line\n");
                 return;
             }
             len = crlf - buffer_.peek() + 2;
@@ -145,7 +144,7 @@ void Request::parse_header_line(const char *line, size_t size) {
 }
 
 int Request::reset() {
-    debug("request has reseted\n");
+    LOG_DEBUG << "reset request";
     method.clear();
     path.clear();
     headers.clear();

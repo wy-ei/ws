@@ -7,7 +7,6 @@
 #include "Server.h"
 #include "Middleware.h"
 #include "imp.h"
-#include <cassert>
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -35,7 +34,7 @@ void Server::use(const std::shared_ptr<Middleware>& mw) {
 void Server::on_connection(SP<Conn> conn) {
     auto context = new Context(conn, router_, middleware_);
     std::shared_ptr<void> a(context, [](void* p){
-        debug("close http- >\n");
+        LOG_DEBUG << "close http connection";
         auto* ctx = static_cast<Context*>(p);
         delete ctx;
     });

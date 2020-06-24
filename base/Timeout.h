@@ -43,14 +43,12 @@ public:
         list_.emplace_back(node);
         auto it = list_.end();
         map_[id] = --it;
-        debug("add %d\n", id);
     }
 
     void remove(const SP<Channel>& channel){
         int id = channel->fd();
         auto it = map_.find(id);
         if(it != map_.end()){
-            debug("remove %d\n", id);
             list_.erase(it->second);
             map_.erase(id);
         }
@@ -60,11 +58,7 @@ public:
         long now = current_time_ms();
 
         auto it = list_.begin();
-        for(auto& node: list_){
-            debug("list: socket: %d  use_count: %d -  %ld\n", node.channel_->fd(), node.channel_.use_count(), node.time_ - now);
-        }
         while(it != list_.end() && it->time_ < now){
-            debug("%d is timeout\n", it->channel_->fd());
             map_.erase(it->channel_->fd());
             func(it->channel_);
             it++;

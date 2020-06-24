@@ -33,10 +33,9 @@ int logging_test(){
     });
 }
 
-int main(int argc, char* argv[]){
-    ws::logging::init(argv[0]);
-
-    logging_test();
-
-//    ws::logging::stop();
-}
+//int main(int argc, char* argv[]){
+//    ws::logging::init(argv[0]);
+//
+//    logging_test();
+//
+//}

@@ -8,7 +8,7 @@
 #include "../utils/str.h"
 
 bool Router::handle(Request &req, Response &res) const {
-    debug("dispatching %s %s\n", req.method.c_str(), req.path.c_str());
+    LOG_DEBUG << "dispatching " <<  req.method << " " << req.path;
 
     auto func = [&](const Route& route){
         std::cmatch m;

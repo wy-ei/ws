@@ -6,8 +6,12 @@
 
 #include "Socket.h"
 #include "../base/ThreadPool.h"
+#include "../log/logging.h"
+
 
 using std::shared_ptr;
+
+
 
 bool TCPServer::listen(const std::string& host, unsigned short port) {
     bool success = server_socket_.bind({host, port});
@@ -41,13 +45,12 @@ void TCPServer::listen_internal() {
 }
 
 void TCPServer::handle_accept() {
-    debug("accept\n");
     main_loop_->assert_in_loop_thread();
     Socket client = server_socket_.accept();
     if(client.fd() > 0){
         handle_new_connection(client);
     }else{
-        debug("accept fail\n");
+        LOG_DEBUG << "accept failed";
     }
 }
 
@@ -62,11 +65,7 @@ void TCPServer::handle_new_connection(const Socket& client_sock) {
     if(connection_callback_){
         conn->set_connect_callback(connection_callback_);
     }else{
-        conn->set_connect_callback([this](const SP<Conn>& conn){
-            debug("local address: %s  peer address: %s\n", conn->socket().address().to_string().c_str(),
-                    server_socket_.address().to_string().c_str());
-        });
-        debug("no handle\n");
+        LOG_DEBUG << "no connection handle for: " << conn->socket().address();
     }
     loop->run_in_loop(std::bind(&Conn::init, conn));
 }
@@ -82,8 +81,11 @@ EventLoop* TCPServer::next_io_loop() {
 }
 
 void TCPServer::remove_connection(const SP<Conn>& conn) {
-    debug("close tcpserver->\n");
+    LOG_DEBUG << "close connection - " << conn->fd();
     main_loop_->run_in_loop([this, conn]{
+        if(connection_close_callback_){
+            connection_close_callback_(conn);
+        }
         connections_.erase(conn->fd());
         EventLoop* io_loop = conn->get_loop();
         io_loop->enqueue(std::bind(&Conn::destroy, conn));

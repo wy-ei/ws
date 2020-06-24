@@ -14,7 +14,7 @@ SocketAddress::SocketAddress(const sockaddr* sa) {
         case AF_INET:{
             const auto *sin = reinterpret_cast<const sockaddr_in*>(sa);
             if(inet_ntop(AF_INET, &sin->sin_addr, str, sizeof(str)) == nullptr){
-                debug("error\n");
+                LOG_ERROR << "invalid sockaddr";
                 return;
             }
             host = str;
@@ -24,6 +24,7 @@ SocketAddress::SocketAddress(const sockaddr* sa) {
         case AF_INET6:{
             const auto *sin6 = reinterpret_cast<const sockaddr_in6*>(sa);
             if(inet_ntop(AF_INET6, &sin6->sin6_addr, str, sizeof(str)) == nullptr){
+                LOG_ERROR << "invalid sockaddr";
                 return;
             }
             host = str;
@@ -47,6 +48,11 @@ std::string SocketAddress::to_string() const {
     return host + ":" + std::to_string(port);
 }
 
+std::ostream& operator<<(std::ostream& os, const SocketAddress& rhs){
+    os << rhs.host << ':' << rhs.port;
+    return os;
+}
+
 Socket::~Socket() {
     //::close(sock_);
 }
@@ -54,7 +60,7 @@ Socket::~Socket() {
 
 bool Socket::listen() {
     state_ = State::k_listening;
-    debug("listening: %s\n", this->address().to_string().c_str());
+    LOG_DEBUG << "listening: " << this->address();
     return ::listen(sock_, 5) == 0;
 }
 
@@ -101,7 +107,7 @@ bool Socket::connect(const SocketAddress& address) {
     for(addrinfo *p = result; p; p = p->ai_next){
         if(::connect(sock_, p->ai_addr, p->ai_addrlen) == 0){
             freeaddrinfo(result);
-            debug("connected success: %s\n", address.to_string().c_str());
+            LOG_DEBUG << "connected success: " << address;
             state_ = State::k_connected;
             return true;
         }
@@ -133,12 +139,9 @@ Socket Socket::accept() {
     }
     if(conn_fd < 0){
         // TODO
-        debug("accept fail\n");
     }
     Socket sock(this->family_, this->type_, 0, conn_fd);
-    char client_address_buff[50];
-    inet_ntop(AF_INET, &address.sin_addr, client_address_buff, 50);
-    debug("receive tcp connection from %s:%d  - fd: %d\n", client_address_buff, address.sin_port, conn_fd);
+    LOG_DEBUG << "receive tcp connection from: " << sock.address();
     return sock;
 }
 

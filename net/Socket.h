@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/un.h>
+#include "ostream"
 
 #include <utility>
 
@@ -22,11 +23,11 @@ struct SocketAddress{
     SocketAddress(std::string  _host, unsigned short _port): host(std::move(_host)),port(_port){};
     explicit SocketAddress(const sockaddr *sa);
     std::string to_string() const;
-
-
     std::string host;
     unsigned short port {0};
 };
+
+std::ostream& operator<<(std::ostream&, const SocketAddress&);
 
 class Socket{
     enum class State{

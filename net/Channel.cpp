@@ -28,11 +28,6 @@ void Channel::handle_event() {
     event_handling_ = false;
 }
 
-void Channel::close() {
-    closed_ = true;
-    // auto loop = owner_loop_.lock();
-}
-
 void Channel::update() {
     loop_->update_channel(shared_from_this());
 }

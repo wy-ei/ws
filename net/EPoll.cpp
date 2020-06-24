@@ -1,4 +1,5 @@
 #include "EPoll.h"
+#include "../log/logging.h"
 
 
 bool EPoll::has_channel(const SP<Channel>& channel) const {
@@ -57,8 +58,8 @@ void EPoll::update(int op, const SP<Channel>& channel) {
     bzero(&ev, sizeof(ev));
     ev.events = channel->events();
     ev.data.fd = fd;
-    std::string event_str = events_to_string(channel->events());
-    debug("EPoll %d - %s <%s> on fd:<%d>, epoll fd size: %d\n", epoll_fd_, operation_to_string(op), event_str.c_str(), channel->fd(), fd_to_channel_.size());
+    LOG_DEBUG << "EPoll:" << epoll_fd_ << " op:" << operation_to_string(op)
+        << "events:" << events_to_string(channel->events()) << " on fd:" << channel->fd();
     int ret = ::epoll_ctl(epoll_fd_, op, fd, &ev);
     assert(ret == 0);
 }
@@ -88,7 +89,9 @@ std::vector<SP<Channel>> EPoll::wait(int timeout_ms) {
     }
     else {
         if (errno != EINTR) {
-            debug("epoll_wait failure: %s\n", strerror(errno));
+            char buffer[128];
+            strerror_r(errno, buffer, sizeof(buffer));
+            LOG_ERROR << "epoll_wait failure: " << buffer;
         }
     }
     return {};

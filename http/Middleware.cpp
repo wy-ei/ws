@@ -42,23 +42,28 @@ void mw::StaticFileMiddleware::call(Request &req, Response &res) {
 
             int fd = open(path.c_str(), O_RDONLY);
             if(fd < 0) {
-                debug("------- open fail\n");
+                LOG_ERROR << "can't open fill: " << strerror(errno);
+                res.set_status(500);
+                res.write("can't open fill");
+                res.end();
+                return;
+            }else{
+                char buff[8000];
+                int n = 0;
+                while ((n = read(fd, buff, 4000)) > 0){
+                    res.write(buff, n);
+                }
+                res.end();
+                return;
             }
-            debug("------- open success \n");
-            char buff[4000];
-            int n = 0;
-            while ((n = read(fd, buff, 4000)) > 0){
-                res.write(buff, n);
-            }
-            res.end();
-            return;
+
         }
     }
 }
 
 void mw::StaticFileMiddleware::add_static_file_dir(const std::string &path) {
     std::string abs_path = ws::path::normalize(path);
-    debug("add path: %s\n", abs_path.c_str());
+    LOG_DEBUG << "add path:" << abs_path;
     static_file_dirs_.push_back(std::move(abs_path));
 }
 

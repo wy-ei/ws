@@ -29,7 +29,7 @@ public:
 
     }
     ~Context(){
-        debug("context die --->\n");
+        LOG_DEBUG << "context die";
     }
 
     void on_message(const char* data, size_t len);

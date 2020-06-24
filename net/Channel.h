@@ -18,7 +18,7 @@ public:
     Channel(EventLoop*loop, int fd);
 
     ~Channel(){
-        debug("channel die: %d\n", fd_);
+        LOG_DEBUG << "channel die:" << fd_;
     }
 
     void handle_event();
@@ -55,7 +55,6 @@ public:
 
     void remove_self_from_loop();
 
-    void close();
     bool closed() const { return closed_; }
 private:
     void update();

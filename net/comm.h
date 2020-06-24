@@ -24,6 +24,8 @@
 #include <cassert>
 #include <memory>
 
+
+
 #define WS_DEBUG 1
 using socket_t = int;
 
@@ -39,10 +41,6 @@ using Handler = std::function<void(Request &, Response &)>;
 using Headers = std::multimap<std::string, std::string>;
 using Params = std::unordered_map<std::string, std::string>;
 
-const int KEEPALIVE_TIMEOUT_SECOND = 5;
-const size_t REQUEST_BUF_LEN = 4096;
-
 #define SP std::shared_ptr
-
 
 #endif //WS_COMM_H

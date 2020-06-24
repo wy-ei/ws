@@ -8,8 +8,8 @@
 
 
 void Context::on_message(const char *data, size_t len) {
-    std::string s(data, len);
-    debug("message comming: %s\n", s.c_str());
+    std::string message(data, len);
+    LOG_DEBUG << "message comming:" << message;
     req_.execute_parse(data, len);
 }
 
@@ -21,7 +21,6 @@ void Context::set_callbacks() {
 
 void Context::reset_context() {
     std::cout << res_;
-    debug("response finished ---\n");
     if(req_.keep_alive() && res_.keep_alive() && !req_.bad()){
         req_.reset();
         res_.reset();
@@ -31,7 +30,7 @@ void Context::reset_context() {
 }
 
 void Context::handle_request() {
-    debug("request ---------------------------------------\n");
+    LOG_DEBUG << "handle request";
     set_default_response_headers();
 
     if(req_.bad()){
