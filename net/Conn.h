@@ -13,6 +13,10 @@
 #include "../base/Buffer.h"
 
 
+namespace ws{
+namespace net{
+using namespace base;
+
 class Conn : public std::enable_shared_from_this<Conn>{
     /*
      * 初始时： k_connecting
@@ -29,11 +33,11 @@ class Conn : public std::enable_shared_from_this<Conn>{
     };
 
 public:
-    using ConnectCallback = std::function<void(SP<Conn>)>;
+    using ConnectCallback = std::function<void(std::shared_ptr<Conn>)>;
     using MessageCallback = std::function<void(const char*, size_t)>;
     using HighWaterMarkCallback = std::function<void(size_t)>;
     using TimeoutCallback = std::function<void(size_t)>;
-    using CloseCallback = std::function<void(const SP<Conn>&)>;
+    using CloseCallback = std::function<void(const std::shared_ptr<Conn>&)>;
     using ErrorCallback = std::function<void()>;
 public:
     Conn() = delete;
@@ -78,8 +82,8 @@ public:
         error_callback_ = std::move(callback);
     }
 
-    SP<void> context(){ return context_; }
-    void context(SP<void> ctx) { context_ = std::move(ctx); }
+    std::shared_ptr<void> context(){ return context_; }
+    void context(std::shared_ptr<void> ctx) { context_ = std::move(ctx); }
 private:
     ConnectCallback connect_callback_;
     MessageCallback message_callback_;
@@ -89,13 +93,16 @@ private:
     ErrorCallback error_callback_;
 
     EventLoop* loop_;
-    SP<Channel> channel_;
+    std::shared_ptr<Channel> channel_;
     std::atomic<State> state_ { State::k_connecting };
 
     Socket sock_;
     SocketAddress peer_address_;
-    SP<void> context_ { nullptr };
+    std::shared_ptr<void> context_ { nullptr };
     Buffer write_buffer_;
 };
+
+} // end namespace net
+} // namespace ws
 
 #endif //WS_CONN_H

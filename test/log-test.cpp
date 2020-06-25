@@ -6,6 +6,8 @@
 using ws::TEST;
 using ws::assert_true;
 
+using namespace ws::base;
+
 int logging_test(){
 //    ws::logging::set_level(ws::logging::INFO);
 

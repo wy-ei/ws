@@ -9,8 +9,11 @@
 #include "../log/logging.h"
 
 
-using std::shared_ptr;
+namespace ws{
+namespace net{
 
+
+using std::shared_ptr;
 
 
 bool TCPServer::listen(const std::string& host, unsigned short port) {
@@ -80,7 +83,7 @@ EventLoop* TCPServer::next_io_loop() {
     return loop;
 }
 
-void TCPServer::remove_connection(const SP<Conn>& conn) {
+void TCPServer::remove_connection(const std::shared_ptr<Conn>& conn) {
     LOG_DEBUG << "close connection - " << conn->fd();
     main_loop_->run_in_loop([this, conn]{
         if(connection_close_callback_){
@@ -92,4 +95,5 @@ void TCPServer::remove_connection(const SP<Conn>& conn) {
     });
 }
 
-
+} // end namespace net
+} // namespace ws

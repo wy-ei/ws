@@ -33,16 +33,12 @@ enum LEVEL {
     TRACE, DEBUG, INFO, WARN, ERROR, FATAL
 };
 
-namespace detail {
+extern LEVEL logging_level;
 
-extern const char *LevelName[];
+namespace detail {
 
 using OutputCallback = std::function<void(const char *message, size_t len)>;
 using FlushCallback = std::function<void()>;
-
-extern OutputCallback logging_output;
-extern FlushCallback logging_flush;
-extern LEVEL logging_level;
 
 using std::placeholders::_1;
 using std::placeholders::_2;
@@ -101,60 +97,10 @@ public:
         program_name_ = program_name;
         roll_file();
     }
+    void roll_file();
 
-    void roll_file(){
-        if(fd_ != -1){
-            close(fd_);
-        }
-        file_size_ = 0;
-        std::string filename = build_filename();
-        fd_ = ::open(filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY);
-        assert(fd_ > 0);
-    }
-
-    std::string build_filename(){
-        std::string filename;
-        // 格式为： [program_name]-[time]-[host].log
-
-        filename += program_name_;
-
-        char buffer[256];
-        struct tm tm_time{};
-        time_t now = time(nullptr);
-        localtime_r(&now, &tm_time);
-        size_t n = strftime(buffer, sizeof(buffer), "-%Y%m%d-%H%M%S-", &tm_time);
-
-        filename += buffer;
-
-        if (::gethostname(buffer, sizeof buffer) == 0){
-            buffer[sizeof(buffer) - 1] = '\0';
-            filename += buffer;
-        }else{
-            filename += "unknownhost";
-        }
-
-        filename += ".log";
-
-        return filename;
-    }
-
-    void write(const std::list<std::shared_ptr<Buffer>> &buffers) {
-        std::unique_lock<std::mutex> lock(mutex_);
-
-        iovec vec[buffers.size()];
-        int i = 0;
-        for (auto &buffer: buffers) {
-            vec[i].iov_base = (void *) buffer->data();
-            vec[i].iov_len = buffer->size();
-            i++;
-        }
-        ssize_t n = writev(fd_, vec, buffers.size());
-        file_size_ += n;
-        // 超过 1GB 后切换文件
-        if(file_size_ > 1024*1024*1024){
-            roll_file();
-        }
-    }
+    std::string build_filename();
+    void write(const std::list<std::shared_ptr<Buffer>> &buffers);
 
 private:
     std::mutex mutex_;
@@ -198,8 +144,6 @@ private:
     std::atomic<bool> stop_{false};
 };
 
-extern std::shared_ptr<Logging> p_logging;
-
 
 } // end namespace detail
 
@@ -208,30 +152,18 @@ extern std::shared_ptr<Logging> p_logging;
 // 下面是暴露给用户的接口
 
 // 启动后端，默认前端会把内容写到标准输出
-inline void init(const std::string& program_name){
-    static int n = 0;
-    if(n != 0){
-        return;
-    }
-    n = 1;
-    detail::p_logging = std::make_shared<detail::Logging>(program_name);
-}
+void init(const std::string& program_name);
 
-inline void set_level(LEVEL level){
-    detail::logging_level = level;
-}
+void set_level(LEVEL level);
 
 // 停止后端，此后日志会写入到标准输出
-inline void stop(){
-    if(detail::p_logging == nullptr){
-        return;
-    }else{
-        detail::p_logging->stop();
-    }
-}
+void stop();
+
 
 } // end namespace logging
 } // end namespace ws
+
+
 
 
 /*
@@ -240,11 +172,11 @@ inline void stop(){
  * LOG_INFO << "hello world";
  */
 
-#define LOG_TRACE if(ws::logging::detail::logging_level <=ws::logging::TRACE )  ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::TRACE)
-#define LOG_DEBUG if(ws::logging::detail::logging_level <=ws::logging::DEBUG ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::DEBUG)
-#define LOG_INFO if(ws::logging::detail::logging_level <=ws::logging::INFO ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::INFO)
-#define LOG_WARN ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::WARN)
-#define LOG_ERROR ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::ERROR)
-#define LOG_FATAL ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::FATAL)
+#define LOG_TRACE if(ws::logging::logging_level <=ws::logging::TRACE )  ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::TRACE)
+#define LOG_DEBUG if(ws::logging::logging_level <=ws::logging::DEBUG ) ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::DEBUG)
+#define LOG_INFO if(ws::logging::logging_level <=ws::logging::INFO ) ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::INFO)
+#define LOG_WARN ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::WARN)
+#define LOG_ERROR ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::ERROR)
+#define LOG_FATAL ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::FATAL)
 
 #endif //WS_LOGGING_H

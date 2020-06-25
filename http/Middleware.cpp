@@ -10,8 +10,12 @@
 #include "imp.h"
 #include "../log/logging.h"
 #include "../utils/path.h"
+#include "Response.h"
+#include "Request.h"
 
-
+namespace ws{
+namespace http{
+using namespace net;
 
 void mw::StaticFileMiddleware::call(Request &req, Response &res) {
     if(res.finished()){
@@ -23,6 +27,7 @@ void mw::StaticFileMiddleware::call(Request &req, Response &res) {
     for(const auto& base_dir: static_file_dirs_){
         std::string relative_path = ws::path::normalize(req.path);
         std::string path = ws::path::join({base_dir, relative_path});
+
         struct stat st{};
         if(path.back() == '/'){
             path += "index.html";
@@ -71,3 +76,5 @@ void mw::StaticFileMiddleware::set_file_extension_to_mimetype_mapping(const char
     file_extension_to_mimetype_map_[ext] = mime;
 }
 
+} // end namespace http
+} // namespace ws

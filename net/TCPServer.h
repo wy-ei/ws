@@ -12,6 +12,9 @@
 #include "EventLoop.h"
 #include "Conn.h"
 
+namespace ws{
+namespace net{
+
 class TCPServer {
     using ConnectionCallback = typename Conn::ConnectCallback;
 public:
@@ -29,7 +32,7 @@ private:
     void handle_new_connection(const Socket& client_sock);
     void handle_accept();
     EventLoop* next_io_loop();
-    void remove_connection(const SP<Conn>&);
+    void remove_connection(const std::shared_ptr<Conn>&);
 
     std::list<EventLoop*> event_loops_;
     EventLoop* main_loop_ { nullptr };
@@ -39,7 +42,7 @@ private:
     size_t num_thread_ = 20;
     std::atomic<bool> running_ {false};
 
-    std::unordered_map<int, SP<Conn>> connections_;
+    std::unordered_map<int, std::shared_ptr<Conn>> connections_;
     ConnectionCallback connection_callback_;
     ConnectionCallback connection_close_callback_;
 
@@ -47,5 +50,9 @@ private:
     unsigned short port_ { 0 };
     std::string name_;
 };
+
+
+} // end namespace net
+} // namespace ws
 
 #endif //WS_TCPSERVER_H

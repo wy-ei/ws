@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "../net/comm.h"
+#include "./comm.h"
 #include "../base/Buffer.h"
 #include "../net/Conn.h"
 #include "Request.h"
@@ -18,10 +18,14 @@
 #include "Middleware.h"
 #include "../log/logging.h"
 
+namespace ws{
+namespace http{
+using namespace net;
+
 class Context: public std::enable_shared_from_this<Context>{
-    using RequestCallback = std::function<void(SP<Request> req, SP<Response> res)>;
+    using RequestCallback = std::function<void(std::shared_ptr<Request> req, std::shared_ptr<Response> res)>;
 public:
-    explicit Context(SP<Conn>& conn, Router& router, std::vector<SP<Middleware>>& middleware)
+    explicit Context(std::shared_ptr<Conn>& conn, Router& router, std::vector<std::shared_ptr<Middleware>>& middleware)
         :conn_(conn), router_(router), middleware_(middleware),
         req_(conn), res_(conn){
 
@@ -46,11 +50,14 @@ private:
     Router& router_;
     std::vector<std::shared_ptr<Middleware>>& middleware_;
 
-    SP<Conn> conn_;
+    std::shared_ptr<Conn> conn_;
 
     Request req_;
     Response res_;
 };
 
+
+} // end namespace http
+} // namespace ws
 
 #endif //EX1_CONTEXT_H

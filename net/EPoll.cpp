@@ -1,14 +1,17 @@
 #include "EPoll.h"
 #include "../log/logging.h"
 
+namespace ws{
+namespace net{
 
-bool EPoll::has_channel(const SP<Channel>& channel) const {
+
+bool EPoll::has_channel(const std::shared_ptr<Channel>& channel) const {
     int fd = channel->fd();
     auto it = fd_to_channel_.find(fd);
     return  it != fd_to_channel_.end() && it->second == channel;
 }
 
-void EPoll::add_channel(const SP<Channel>& channel) {
+void EPoll::add_channel(const std::shared_ptr<Channel>& channel) {
     if(has_channel(channel)){
         update(EPOLL_CTL_MOD, channel);
     }else{
@@ -17,7 +20,7 @@ void EPoll::add_channel(const SP<Channel>& channel) {
     }
 }
 
-void EPoll::remove_channel(const SP<Channel>& channel) {
+void EPoll::remove_channel(const std::shared_ptr<Channel>& channel) {
     int fd = channel->fd();
     if(fd_to_channel_.find(fd) != fd_to_channel_.end()){
         fd_to_channel_.erase(fd);
@@ -52,20 +55,20 @@ std::string events_to_string(int e){
     return s;
 }
 
-void EPoll::update(int op, const SP<Channel>& channel) {
+void EPoll::update(int op, const std::shared_ptr<Channel>& channel) {
     int fd = channel->fd();
     epoll_event ev{};
     bzero(&ev, sizeof(ev));
     ev.events = channel->events();
     ev.data.fd = fd;
     LOG_DEBUG << "EPoll:" << epoll_fd_ << " op:" << operation_to_string(op)
-        << "events:" << events_to_string(channel->events()) << " on fd:" << channel->fd();
+        << " events:" << events_to_string(channel->events()) << " on fd:" << channel->fd();
     int ret = ::epoll_ctl(epoll_fd_, op, fd, &ev);
     assert(ret == 0);
 }
 
-std::vector<SP<Channel>> EPoll::get_activate_channels(int n) {
-    std::vector<SP<Channel>> activate_channels;
+std::vector<std::shared_ptr<Channel>> EPoll::get_activate_channels(int n) {
+    std::vector<std::shared_ptr<Channel>> activate_channels;
     assert(n <= events_.size());
     for(int i=0;i<n;i++){
         int fd = events_[i].data.fd;
@@ -79,7 +82,7 @@ std::vector<SP<Channel>> EPoll::get_activate_channels(int n) {
     return activate_channels;
 }
 
-std::vector<SP<Channel>> EPoll::wait(int timeout_ms) {
+std::vector<std::shared_ptr<Channel>> EPoll::wait(int timeout_ms) {
     int n = epoll_wait(epoll_fd_, events_.data(), events_.size(), timeout_ms);
     if(n > 0){
         return get_activate_channels(n);
@@ -96,3 +99,6 @@ std::vector<SP<Channel>> EPoll::wait(int timeout_ms) {
     }
     return {};
 }
+
+} // end namespace net
+} // namespace ws

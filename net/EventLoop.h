@@ -18,6 +18,10 @@
 #include "EPoll.h"
 #include "Channel.h"
 
+namespace ws{
+namespace net{
+
+
 class EventLoop;
 
 extern __thread EventLoop* this_thread_event_loop;
@@ -37,9 +41,9 @@ public:
     void enqueue(Functor cb);
     void run_in_loop(Functor cb);
 
-    void add_channel(const SP<Channel>& channel);
-    void remove_channel(const SP<Channel>& channel);
-    void update_channel(const SP<Channel>& channel);
+    void add_channel(const std::shared_ptr<Channel>& channel);
+    void remove_channel(const std::shared_ptr<Channel>& channel);
+    void update_channel(const std::shared_ptr<Channel>& channel);
 
     void assert_in_loop_thread();
 
@@ -56,10 +60,14 @@ private:
     std::vector<Functor> pending_functors_;
 
     int wakeup_fd_;
-    SP<Channel> wakeup_channel_;
+    std::shared_ptr<Channel> wakeup_channel_;
 
     EPoll epoll_{};
     typename std::thread::id tid_;
 };
 
+} // end namespace net
+} // namespace ws
+
 #endif //WS_EVENTLOOP_H
+

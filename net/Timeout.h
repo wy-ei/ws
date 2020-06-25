@@ -16,15 +16,17 @@
 #include <memory>
 
 
-#include "../net/comm.h"
-#include "../net/Channel.h"
+#include "comm.h"
+#include "Channel.h"
 
+namespace ws{
+namespace net{
 
 struct TimeNode{
     long time_;
-    SP<Channel> channel_;
+    std::shared_ptr<Channel> channel_;
 
-    TimeNode(SP<Channel> channel, long time):channel_(std::move(channel)), time_(time){}
+    TimeNode(std::shared_ptr<Channel> channel, long time):channel_(std::move(channel)), time_(time){}
 };
 
 
@@ -32,7 +34,7 @@ class Timeout {
 public:
     explicit Timeout(long timeout_ms): timeout_ms_(timeout_ms){}
 
-    void add(const SP<Channel>& channel){
+    void add(const std::shared_ptr<Channel>& channel){
         long time_ms = current_time_ms() + timeout_ms_;
 
         int id = channel->fd();
@@ -45,7 +47,7 @@ public:
         map_[id] = --it;
     }
 
-    void remove(const SP<Channel>& channel){
+    void remove(const std::shared_ptr<Channel>& channel){
         int id = channel->fd();
         auto it = map_.find(id);
         if(it != map_.end()){
@@ -54,7 +56,7 @@ public:
         }
     }
 
-    void handle_timeout_channels(const std::function<void(SP<Channel>& channel)>& func){
+    void handle_timeout_channels(const std::function<void(std::shared_ptr<Channel>& channel)>& func){
         long now = current_time_ms();
 
         auto it = list_.begin();
@@ -82,5 +84,7 @@ private:
     std::unordered_map<int, list_iterator> map_;
 };
 
+} // end namespace net
+} // namespace ws
 
 #endif //WS_TIMEOUT_H

@@ -12,9 +12,13 @@
 #include <ostream>
 #include <unordered_map>
 
-#include "../net/comm.h"
+#include "./comm.h"
 #include "../net/Conn.h"
 #include "../base/Buffer.h"
+
+namespace ws{
+namespace http{
+using namespace net;
 
 class Request {
     friend std::ostream& operator<<(std::ostream& os, const Request& req){
@@ -34,9 +38,9 @@ class Request {
 
         return os;
     }
-    using HeadCompleteCallback = std::function<void()>;
+    using ParseCompleteCallback = std::function<void()>;
 public:
-    explicit Request(SP<Conn>& conn):conn_(conn){}
+    explicit Request(std::shared_ptr<Conn>& conn):conn_(conn){}
 
     std::string method;
     std::string path;
@@ -59,8 +63,8 @@ public:
     bool finished() const { return current_state_ == PARSE_STATE::END; }
     bool keep_alive();
 
-    void set_head_complete_callback(HeadCompleteCallback callback){
-        head_complete_callback_ = std::move(callback);
+    void set_parse_complete_callback(ParseCompleteCallback callback){
+        parse_complete_callback_ = std::move(callback);
     }
 
     int reset();
@@ -72,7 +76,7 @@ private:
     Buffer buffer_;
 
     bool bad_ = false;
-    SP<Conn> conn_;
+    std::shared_ptr<Conn> conn_;
 
 
     enum class PARSE_STATE {
@@ -80,12 +84,14 @@ private:
     };
     PARSE_STATE current_state_ = PARSE_STATE::REQUEST_LINE;
 
-
-    HeadCompleteCallback head_complete_callback_;
+    ParseCompleteCallback parse_complete_callback_;
 
     // bool parse_chunked_content();
 
 };
+
+} // end namespace http
+} // namespace ws
 
 
 #endif //WS_REQUEST_H

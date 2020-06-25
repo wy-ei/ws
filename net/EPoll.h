@@ -14,6 +14,8 @@
 #include "Channel.h"
 #include "../log/logging.h"
 
+namespace ws{
+namespace net{
 
 
 class EPoll{
@@ -30,22 +32,25 @@ public:
         ::close(epoll_fd_);
     }
 
-    std::vector<SP<Channel>> wait(int timeout_ms);
-    std::vector<SP<Channel>> get_activate_channels(int n);
+    std::vector<std::shared_ptr<Channel>> wait(int timeout_ms);
+    std::vector<std::shared_ptr<Channel>> get_activate_channels(int n);
 
-    void add_channel(const SP<Channel>& channel);
-    void remove_channel(const SP<Channel>&  channel);
-    bool has_channel(const SP<Channel>& channel) const;
+    void add_channel(const std::shared_ptr<Channel>& channel);
+    void remove_channel(const std::shared_ptr<Channel>&  channel);
+    bool has_channel(const std::shared_ptr<Channel>& channel) const;
     int fd(){ return epoll_fd_; }
 private:
-    void update(int op, const SP<Channel>& channel);
+    void update(int op, const std::shared_ptr<Channel>& channel);
 
-    std::unordered_map<int, SP<Channel>> fd_to_channel_;
+    std::unordered_map<int, std::shared_ptr<Channel>> fd_to_channel_;
 
     int epoll_fd_;
     std::vector<epoll_event> events_;
 
 };
+
+} // end namespace net
+} // namespace ws
 
 
 #endif //WS_EPOLL_H

@@ -3,6 +3,10 @@
 #include "Channel.h"
 #include "EventLoop.h"
 
+namespace ws{
+namespace net{
+
+
 Channel::Channel(EventLoop *loop, int fd): loop_(loop), fd_(fd) {
 }
 
@@ -37,6 +41,5 @@ void Channel::remove_self_from_loop() {
 }
 
 
-
-
-
+} // end namespace net
+} // namespace ws

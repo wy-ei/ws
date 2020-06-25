@@ -4,12 +4,13 @@
 #include <array>
 #include <sys/epoll.h>
 #include <atomic>
-
 #include "comm.h"
 #include "../log/logging.h"
 
 
-static int channel_id = 0;
+namespace ws{
+namespace net{
+
 
 class Channel: public std::enable_shared_from_this<Channel>{
     using EventCallback = std::function<void()>;
@@ -71,6 +72,9 @@ private:
     EventCallback close_callback_;
     EventCallback error_callback_;
 };
+
+} // end namespace net
+} // namespace ws
 
 
 #endif //WS_CHANNEL_H

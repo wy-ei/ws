@@ -4,9 +4,10 @@
 
 #include "imp.h"
 
+namespace ws{
+namespace http{
+
 namespace imp{
-
-
 
 const char* find_content_type(const std::string &path,
                   const std::unordered_map<std::string, std::string> &user_defined_dict) {
@@ -119,10 +120,13 @@ const char *status_message(int status) {
         case 511: return "Network Authentication Required";
 
         default:
-        case 500: return "Internal Server Error";
+        case 500: return "Internal HTTPServer Error";
     }
 }
 
 
 
 } // end namespace imp
+
+} // end namespace http
+} // namespace ws

@@ -78,5 +78,4 @@ std::string path::normalize(const std::string &path) {
     return new_path;
 }
 
-
 } // end namespace ws

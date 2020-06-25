@@ -11,7 +11,9 @@
 #include "imp.h"
 #include "Request.h"
 
-
+namespace ws{
+namespace http{
+using namespace net;
 
 bool Request::keep_alive(){
     if(get_header_value("Context") == "close"){
@@ -97,8 +99,8 @@ void Request::execute_parse(const char *data, size_t len) {
             return;
         }
     }
-    if(head_complete_callback_){
-        head_complete_callback_();
+    if(parse_complete_callback_){
+        parse_complete_callback_();
     }
 }
 
@@ -154,3 +156,7 @@ int Request::reset() {
     params.clear();
     current_state_ = PARSE_STATE::REQUEST_LINE;
 }
+
+
+} // end namespace http
+} // namespace ws

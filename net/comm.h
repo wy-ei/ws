@@ -24,23 +24,19 @@
 #include <cassert>
 #include <memory>
 
+namespace ws{
+namespace net{
 
 
 #define WS_DEBUG 1
 using socket_t = int;
 
-class Server;
-class Request;
-class Response;
 class Channel;
 class Socket;
 class EventLoop;
 
 
-using Handler = std::function<void(Request &, Response &)>;
-using Headers = std::multimap<std::string, std::string>;
-using Params = std::unordered_map<std::string, std::string>;
-
-#define SP std::shared_ptr
+} // end namespace net
+} // namespace ws
 
 #endif //WS_COMM_H

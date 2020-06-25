@@ -13,15 +13,16 @@
 在用户接口上我模仿了 express 的设计，使用 use 方法，可以添加中间件、路由。
 
 ```c++
-#include "http/Server.h"
+#include "http/HTTPServer.h"
 #include "http/Middleware.h"
 
 int main() {
-    Server server;
+    using namespace ws::http;
+    HTTPServer server;
 
-    // 添加中间件
     auto sfm = std::make_shared<mw::StaticFileMiddleware>();
-    sfm->add_static_file_dir("/mnt/c/Users/wy/work/code/notebook/_site/");
+
+    sfm->add_static_file_dir("/mnt/c/Users/dodo/work/code/notebook/_site/");
     server.use(sfm);
 
     server.use("GET", "/hello", [](Request &req, Response &res) {
@@ -45,6 +46,4 @@ int main() {
 
 ## TODO
 
-- 调整代码结构，添加合适的 namespace
 - 提高代码稳定性
-- 完善路由模块，实现模式匹配，层次路由等功能

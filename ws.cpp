@@ -1,15 +1,16 @@
 //
 // Created by wangyu on 2020/6/14.
 //
-#include "http/Server.h"
+#include "http/HTTPServer.h"
 #include "http/Middleware.h"
 
 int main() {
-    Server server;
+    using namespace ws::http;
+    HTTPServer server;
 
     auto sfm = std::make_shared<mw::StaticFileMiddleware>();
 
-    sfm->add_static_file_dir("/mnt/c/Users/wy/work/code/notebook/_site/");
+    sfm->add_static_file_dir("/mnt/c/Users/dodo/work/code/notebook/_site/");
     server.use(sfm);
 
     server.use("GET", "/hello", [](Request &req, Response &res) {

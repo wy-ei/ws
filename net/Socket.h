@@ -11,9 +11,11 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/un.h>
-#include "ostream"
-
+#include <ostream>
 #include <utility>
+
+namespace ws{
+namespace net{
 
 
 const int INVALID_SOCKET = -1;
@@ -69,5 +71,7 @@ private:
     int sock_;
 };
 
+} // end namespace net
+} // namespace ws
 
 #endif //WS_SOCKET_H

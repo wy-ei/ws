@@ -5,7 +5,6 @@
 #ifndef WS_THREADPOOL_H
 #define WS_THREADPOOL_H
 
-#include "../net/comm.h"
 #include <vector>
 #include <functional>
 #include <mutex>
@@ -13,6 +12,8 @@
 #include <thread>
 #include <list>
 
+namespace ws {
+namespace base {
 
 class ThreadPool{
 public:
@@ -82,6 +83,9 @@ private:
     std::condition_variable cond_;
     std::mutex mutex_;
 };
+
+} // end namespace base
+} // end namespace ws
 
 
 #endif //WS_THREADPOOL_H

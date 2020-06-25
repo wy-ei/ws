@@ -10,6 +10,10 @@
 #include "Response.h"
 #include "imp.h"
 
+namespace ws{
+namespace http{
+using namespace net;
+
 bool Response::has_header(const char *key) const {
     return imp::has_header(headers, key);
 }
@@ -133,4 +137,6 @@ void Response::reset() {
     chunk_encoding_ = false;
 }
 
+} // end namespace http
+} // namespace ws
 

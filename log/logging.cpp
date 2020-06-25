@@ -8,6 +8,7 @@
 namespace ws {
 namespace logging {
 
+LEVEL logging_level = TRACE;
 
 namespace detail {
 
@@ -32,8 +33,6 @@ void default_flush_callback() {
 
 OutputCallback logging_output = default_output_callback;
 FlushCallback logging_flush = default_flush_callback;
-
-LEVEL logging_level = TRACE;
 
 std::shared_ptr<Logging> p_logging;
 
@@ -80,6 +79,62 @@ ssize_t FixedBuffer<SIZE>::append(const char *data, size_t len) {
     write_index_ += len;
     return len;
 }
+
+
+void LogFile::roll_file() {
+    if(fd_ != -1){
+        close(fd_);
+    }
+    file_size_ = 0;
+    std::string filename = build_filename();
+    fd_ = ::open(filename.c_str(), O_CREAT | O_TRUNC | O_WRONLY);
+    assert(fd_ > 0);
+}
+
+std::string LogFile::build_filename() {
+    std::string filename;
+    // 格式为： [program_name]-[time]-[host].log
+
+    filename += program_name_;
+
+    char buffer[256];
+    struct tm tm_time{};
+    time_t now = time(nullptr);
+    localtime_r(&now, &tm_time);
+    size_t n = strftime(buffer, sizeof(buffer), "-%Y%m%d-%H%M%S-", &tm_time);
+
+    filename += buffer;
+
+    if (::gethostname(buffer, sizeof buffer) == 0){
+        buffer[sizeof(buffer) - 1] = '\0';
+        filename += buffer;
+    }else{
+        filename += "unknownhost";
+    }
+
+    filename += ".log";
+
+    return filename;
+}
+
+void LogFile::write(const std::list<std::shared_ptr<Buffer>> &buffers) {
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    iovec vec[buffers.size()];
+    int i = 0;
+    for (auto &buffer: buffers) {
+        vec[i].iov_base = (void *) buffer->data();
+        vec[i].iov_len = buffer->size();
+        i++;
+    }
+    ssize_t n = writev(fd_, vec, buffers.size());
+    file_size_ += n;
+    // 超过 1GB 后切换文件
+    if(file_size_ > 1024*1024*1024){
+        roll_file();
+    }
+}
+
 
 
 Logging::Logging(const std::string &program_name) {
@@ -180,10 +235,34 @@ void Logging::flush() {
 }
 
 
+} // end namespace detail
 
 
+std::shared_ptr<detail::Logging> p_logging;
+
+void init(const std::string &program_name) {
+    static int n = 0;
+    if(n != 0){
+        return;
+    }
+    n = 1;
+    p_logging = std::make_shared<detail::Logging>(program_name);
 }
+
+void set_level(ws::logging::LEVEL level) {
+    logging_level = level;
 }
+
+void stop() {
+    if(detail::p_logging == nullptr){
+        return;
+    }else{
+        detail::p_logging->stop();
+    }
 }
+
+
+} // end namespace logging
+} // end namespace ws
 
 

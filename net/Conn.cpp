@@ -8,6 +8,9 @@
 #include "EventLoop.h"
 #include "../log/logging.h"
 
+namespace ws{
+namespace net{
+using namespace base;
 
 
 Conn::Conn(EventLoop* loop, const Socket& sock, SocketAddress  peer_address)
@@ -80,7 +83,7 @@ void Conn::handle_close() {
     channel_->disable_all();
 
     if(close_callback_){
-        SP<Conn> self(shared_from_this());
+        std::shared_ptr<Conn> self(shared_from_this());
         close_callback_(self);
     }
 }
@@ -138,3 +141,6 @@ void Conn::shutdown() {
     }
 
 }
+
+} // end namespace net
+} // namespace ws

@@ -7,6 +7,9 @@
 #include <thread>
 #include <stdexcept>
 
+namespace ws{
+namespace net{
+
 
 SocketAddress::SocketAddress(const sockaddr* sa) {
     char str[128];
@@ -186,3 +189,6 @@ ssize_t Socket::send(const std::string &data) {
 void Socket::shutdown(int how) {
     ::shutdown(sock_, how);
 }
+
+} // end namespace net
+} // namespace ws

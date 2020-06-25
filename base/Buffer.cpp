@@ -4,6 +4,9 @@
 
 #include "Buffer.h"
 
+namespace ws {
+namespace base {
+
 void Buffer::append(const char *data, size_t len) {
     if(writeable_size()  < len){
         buffer_.resize(buffer_.size() + len);
@@ -18,3 +21,6 @@ const char *Buffer::find(const char *needle, size_t len) const {
     const char* p = std::search(peek(), end , needle, needle + len);
     return p == end ? nullptr : p;
 }
+
+} // end namespace base
+} // end namespace ws

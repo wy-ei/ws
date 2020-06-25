@@ -11,10 +11,13 @@
 #include <regex>
 #include <unordered_map>
 
-#include "../net/comm.h"
+#include "./comm.h"
 #include "Request.h"
 #include "Response.h"
 
+namespace ws{
+namespace http{
+using namespace net;
 
 class Router {
 public:
@@ -32,5 +35,7 @@ private:
     std::unordered_map<std::string, std::vector<Route>> route_map_;
 };
 
+} // end namespace http
+} // namespace ws
 
 #endif //EX1_ROUTER_H

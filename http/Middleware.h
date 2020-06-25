@@ -5,12 +5,13 @@
 #ifndef EX1_MIDDLEWARE_H
 #define EX1_MIDDLEWARE_H
 
+#include "./comm.h"
 #include <vector>
 #include <string>
-#include "Request.h"
-#include "Response.h"
 #include <functional>
 
+namespace ws{
+namespace http{
 
 class Middleware{
 public:
@@ -35,5 +36,7 @@ private:
 
 }
 
+} // end namespace http
+} // namespace ws
 
 #endif //EX1_MIDDLEWARE_H

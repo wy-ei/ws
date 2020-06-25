@@ -6,6 +6,8 @@
 using ws::TEST;
 using ws::assert_true;
 
+using namespace ws::net;
+
 int socket_test(){
     TEST("socket", []{
         Socket server(AF_INET, SOCK_STREAM, 0);

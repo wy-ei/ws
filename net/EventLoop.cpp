@@ -7,6 +7,10 @@
 
 #include "EventLoop.h"
 
+namespace ws{
+namespace net{
+
+
 __thread EventLoop* this_thread_event_loop = nullptr;
 
 EventLoop::EventLoop() :quit_(false){
@@ -38,7 +42,7 @@ void EventLoop::loop() {
     assert(!looping_);
     looping_ = true;
 
-    std::vector<SP<Channel>> active_channels;
+    std::vector<std::shared_ptr<Channel>> active_channels;
     quit_ = false;
     while (!quit_){
         active_channels = epoll_.wait(10000);
@@ -115,7 +119,7 @@ void EventLoop::assert_in_loop_thread() {
     assert(tid_ == std::this_thread::get_id());
 }
 
-void EventLoop::add_channel(const SP<Channel>& channel) {
+void EventLoop::add_channel(const std::shared_ptr<Channel>& channel) {
     if(is_in_loop_thread()){
         epoll_.add_channel(channel);
     }else{
@@ -125,11 +129,11 @@ void EventLoop::add_channel(const SP<Channel>& channel) {
     }
 }
 
-void EventLoop::update_channel(const SP<Channel> &channel) {
+void EventLoop::update_channel(const std::shared_ptr<Channel> &channel) {
     add_channel(channel);
 }
 
-void EventLoop::remove_channel(const SP<Channel>& channel) {
+void EventLoop::remove_channel(const std::shared_ptr<Channel>& channel) {
     if(is_in_loop_thread()){
         epoll_.remove_channel(channel);
     }else{
@@ -140,7 +144,8 @@ void EventLoop::remove_channel(const SP<Channel>& channel) {
 }
 
 
-
+} // end namespace net
+} // namespace ws
 
 
 

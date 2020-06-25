@@ -5,8 +5,11 @@
 #ifndef WS_IMP_H
 #define WS_IMP_H
 
-#include "../net/comm.h"
+#include "./comm.h"
 #include <unordered_map>
+
+namespace ws{
+namespace http{
 
 namespace imp{
 
@@ -42,5 +45,8 @@ const char *find_content_type(const std::string &, const std::unordered_map<std:
 
 } // end namespace imp
 
+
+} // end namespace http
+} // namespace ws
 
 #endif //WS_IMP_H

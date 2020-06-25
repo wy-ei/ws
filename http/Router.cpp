@@ -7,6 +7,10 @@
 #include "../utils/path.h"
 #include "../utils/str.h"
 
+namespace ws{
+namespace http{
+using namespace net;
+
 bool Router::handle(Request &req, Response &res) const {
     LOG_DEBUG << "dispatching " <<  req.method << " " << req.path;
 
@@ -56,3 +60,6 @@ std::regex Router::compile_pattern_to_regex(const std::string &pattern) {
     });
     return std::regex(re);
 }
+
+} // end namespace http
+} // namespace ws

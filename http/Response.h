@@ -7,12 +7,15 @@
 
 #include <utility>
 
-#include "../net/comm.h"
+#include "./comm.h"
 #include "imp.h"
 #include "../net/Conn.h"
 
+namespace ws{
+namespace http{
+using namespace net;
+
 class Response {
-    friend Server;
     friend std::ostream& operator<<(std::ostream& os, const Response& res){
         os << ">>>>>>>>>>  response >>>>>>>>>>\n";
         os << "response finished: <" << res.finished() << ">\n";
@@ -30,7 +33,7 @@ class Response {
     }
     using FinishCallback = std::function<void()>;
 public:
-    explicit Response(SP<Conn>& conn): conn_(conn){}
+    explicit Response(std::shared_ptr<Conn>& conn): conn_(conn){}
 
     bool has_header(const char *key) const;
     void set_header(const std::string& key, std::string val);
@@ -62,7 +65,7 @@ private:
     Headers headers;
     std::string body;
 
-    SP<Conn> conn_;
+    std::shared_ptr<Conn> conn_;
 
 
     FinishCallback finish_callback_;
@@ -71,5 +74,7 @@ private:
     bool end_has_called_ = false;
 };
 
+} // end namespace http
+} // namespace ws
 
 #endif //EX1_RESPONSE_H
