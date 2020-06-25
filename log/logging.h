@@ -152,12 +152,12 @@ private:
 // 下面是暴露给用户的接口
 
 // 启动后端，默认前端会把内容写到标准输出
-void init(const std::string& program_name);
+void start_async_backend(const std::string& program_name);
 
 void set_level(LEVEL level);
 
 // 停止后端，此后日志会写入到标准输出
-void stop();
+void stop_async_backend();
 
 
 } // end namespace logging

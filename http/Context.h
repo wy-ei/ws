@@ -39,11 +39,13 @@ public:
     void on_message(const char* data, size_t len);
     void reset_context();
 
-    void set_callbacks();
     void handle_request();
 
 private:
     void set_default_response_headers();
+    void set_callbacks();
+
+    void routing_request();
 
     RequestCallback request_callback_;
 

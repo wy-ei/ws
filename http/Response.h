@@ -53,6 +53,9 @@ public:
     void set_status(int status){
         status_ = status;
     }
+    int get_status(){
+        return status_;
+    }
     bool keep_alive();
     void reset();
 private:
@@ -67,7 +70,9 @@ private:
 
     std::shared_ptr<Conn> conn_;
 
-
+    // 如果支持用户响应的异步写入，用户调用 end 表示 response 已经写完
+    // 此时调用 finish_callback 来通知 context 来关闭连接，目前 res 的写入是同步的
+    // 此回调暂时用不上
     FinishCallback finish_callback_;
     bool chunk_encoding_ = false;
     bool head_flushed_ = false;

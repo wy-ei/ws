@@ -76,7 +76,7 @@ void Response::end() {
     }
 
     if(finish_callback_){
-        finish_callback_();
+        //finish_callback_();
     }
 }
 

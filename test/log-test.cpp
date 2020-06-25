@@ -36,7 +36,7 @@ int logging_test(){
 }
 
 //int main(int argc, char* argv[]){
-//    ws::logging::init(argv[0]);
+//    ws::logging::start_async_backend(argv[0]);
 //
 //    logging_test();
 //

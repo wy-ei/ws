@@ -17,12 +17,11 @@ void Context::on_message(const char *data, size_t len) {
 
 void Context::set_callbacks() {
     req_.set_parse_complete_callback(std::bind(&Context::handle_request, this));
-    res_.set_finished_callback(std::bind(&Context::reset_context, this));
-
+    //res_.set_finished_callback(std::bind(&Context::reset_context, this));
 }
 
 void Context::reset_context() {
-    std::cout << res_;
+    LOG_DEBUG << '\n' <<  res_ << '\n';
     if(req_.keep_alive() && res_.keep_alive() && !req_.bad()){
         req_.reset();
         res_.reset();
@@ -32,9 +31,13 @@ void Context::reset_context() {
 }
 
 void Context::handle_request() {
-    LOG_DEBUG << "handle request";
     set_default_response_headers();
+    routing_request();
+    LOG_INFO << req_.method << " " << req_.path << ' ' << res_.get_status();
+    reset_context();
+}
 
+void Context::routing_request() {
     if(req_.bad()){
         res_.set_status(400);
         res_.end();
@@ -62,6 +65,8 @@ void Context::set_default_response_headers() {
     }
     res_.set_header("HTTPServer", "WS/0.1");
 }
+
+
 
 } // end namespace http
 } // namespace ws

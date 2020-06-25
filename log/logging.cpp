@@ -240,7 +240,7 @@ void Logging::flush() {
 
 std::shared_ptr<detail::Logging> p_logging;
 
-void init(const std::string &program_name) {
+void start_async_backend(const std::string &program_name) {
     static int n = 0;
     if(n != 0){
         return;
@@ -253,7 +253,7 @@ void set_level(ws::logging::LEVEL level) {
     logging_level = level;
 }
 
-void stop() {
+void stop_async_backend() {
     if(detail::p_logging == nullptr){
         return;
     }else{

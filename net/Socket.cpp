@@ -63,7 +63,7 @@ Socket::~Socket() {
 
 bool Socket::listen() {
     state_ = State::k_listening;
-    LOG_DEBUG << "listening: " << this->address();
+    LOG_INFO << "listening: " << this->address();
     return ::listen(sock_, 5) == 0;
 }
 

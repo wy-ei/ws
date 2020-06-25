@@ -44,6 +44,17 @@ int main() {
 }
 ```
 
+## 编译与运行
+
+开发环境为 WSL - Ubuntu 18.04 - C++11，用下面几行命令即可编译并运行
+
+
+```
+$ cmake CMakeLists.txt
+$ make
+$ ./ws
+```
+
 ## TODO
 
 - 提高代码稳定性

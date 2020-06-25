@@ -3,8 +3,11 @@
 //
 #include "http/HTTPServer.h"
 #include "http/Middleware.h"
+#include "log/logging.h"
 
 int main() {
+    ws::logging::set_level(ws::logging::INFO);
+
     using namespace ws::http;
     HTTPServer server;
 
