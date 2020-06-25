@@ -19,6 +19,7 @@ class TCPServer {
     using ConnectionCallback = typename Conn::ConnectCallback;
 public:
     TCPServer() = default;
+    explicit TCPServer(int io_thread_num): io_thread_num_(io_thread_num){}
     bool listen(const std::string& host, unsigned short port);
 
     void set_connection_close_callback(const ConnectionCallback& callback){
@@ -39,7 +40,7 @@ private:
 
     Socket server_socket_ { AF_INET, SOCK_STREAM, 0 };
 
-    size_t num_thread_ = 20;
+    size_t io_thread_num_ { 8 };
     std::atomic<bool> running_ {false};
 
     std::unordered_map<int, std::shared_ptr<Conn>> connections_;

@@ -20,10 +20,9 @@ bool TCPServer::listen(const std::string& host, unsigned short port) {
     bool success = server_socket_.bind({host, port});
     assert(success);
 
-    size_t num_thread = 1;
-    std::unique_ptr<ThreadPool> thread_pool(new ThreadPool(num_thread));
+    std::unique_ptr<ThreadPool> thread_pool(new ThreadPool(io_thread_num_));
 
-    for(size_t i=0;i<num_thread;i++){
+    for(size_t i=0;i<io_thread_num_;i++){
         thread_pool->enqueue([this](){
             auto loop = new EventLoop();
             event_loops_.push_back(loop);

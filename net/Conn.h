@@ -82,8 +82,8 @@ public:
         error_callback_ = std::move(callback);
     }
 
-    std::shared_ptr<void> context(){ return context_; }
-    void context(std::shared_ptr<void> ctx) { context_ = std::move(ctx); }
+    void* context(){ return context_; }
+    void context(void* ctx) { context_ = ctx; }
 private:
     ConnectCallback connect_callback_;
     MessageCallback message_callback_;
@@ -98,7 +98,7 @@ private:
 
     Socket sock_;
     SocketAddress peer_address_;
-    std::shared_ptr<void> context_ { nullptr };
+    void* context_ { nullptr };
     Buffer write_buffer_;
 };
 

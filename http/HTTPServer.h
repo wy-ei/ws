@@ -28,22 +28,21 @@ using namespace net;
 
 class HTTPServer {
 public:
-    HTTPServer();
+    HTTPServer() = default;
+    HTTPServer(int thread_num): thread_num_(thread_num){}
     bool listen(const std::string& host, unsigned short port);
     void use(const std::string& method, const std::string& pattern, const Handler& handler);
     void use(const std::shared_ptr<Middleware>& mw);
 private:
     void on_connection(std::shared_ptr<Conn> conn);
     void on_close(const std::shared_ptr<Conn>& conn);
-    // void on_request();
 
     Router router_;
 
-    TCPServer tcp_server_;
-
-    size_t num_thread_ = 20;
+    size_t thread_num_ = 8;
     std::atomic<bool> running_ {false};
-    Timeout timer {5000};
+    // TODO
+    //Timeout timer {5000};
 
     std::unordered_map<int, Context*> connections;
 
