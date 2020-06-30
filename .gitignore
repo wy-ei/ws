@@ -7,3 +7,4 @@ cmake_install.cmake
 ws
 Makefile
 *.log
+ws.cbp

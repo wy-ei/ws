@@ -56,26 +56,30 @@ public:
         }
     }
 
-    void handle_timeout_channels(const std::function<void(std::shared_ptr<Channel>& channel)>& func){
+    std::vector<std::shared_ptr<Channel>> get_timeout_channels(){
         long now = current_time_ms();
 
+        std::vector<std::shared_ptr<Channel>> channels;
         auto it = list_.begin();
         while(it != list_.end() && it->time_ < now){
             map_.erase(it->channel_->fd());
-            func(it->channel_);
+            channels.push_back(it->channel_);
             it++;
         }
-        list_.erase(list_.begin(), it);
+
+        return channels;
     }
 
 private:
     static long current_time_ms(){
-        long now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        return now;
+        using namespace std::chrono;
+        auto duration_ns = steady_clock::now().time_since_epoch();
+        auto duration_ms = duration_cast<milliseconds>(duration_ns);
+        return duration_ms.count();
     }
 
 
-    long timeout_ms_;
+    long timeout_ms_ { 5000 };
 
     using list_iterator = typename std::list<TimeNode>::iterator;
     using map_iterator = typename std::unordered_map<key_t, list_iterator>::iterator;

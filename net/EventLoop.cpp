@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include <vector>
 #include "../log/logging.h"
 
 #include "EventLoop.h"
@@ -49,8 +50,12 @@ void EventLoop::loop() {
         for(auto& channel: active_channels){
             LOG_DEBUG << "epoll:" << epoll_.fd() << "  active channel:" << channel->fd();
             channel->handle_event();
+            if(channel->is_enable_timeout()){
+                timeout_.add(channel);
+            }
         }
         run_pending_functors();
+        handle_timeout_channels();
     }
     looping_ = false;
 }
@@ -140,6 +145,18 @@ void EventLoop::remove_channel(const std::shared_ptr<Channel>& channel) {
         run_in_loop([channel,this]{
             epoll_.remove_channel(channel);
         });
+    }
+}
+
+void EventLoop::handle_timeout_channels() {
+    std::vector<std::shared_ptr<Channel>> channels = timeout_.get_timeout_channels();
+    for(auto& channel: channels){
+        if(!channel->closed()){
+            channel->remove_self_from_loop();
+            channel->set_revents(EPOLLHUP);
+            channel->handle_event();
+        }
+        timeout_.remove(channel);
     }
 }
 

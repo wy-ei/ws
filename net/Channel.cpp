@@ -33,10 +33,13 @@ void Channel::handle_event() {
 }
 
 void Channel::update() {
-    loop_->update_channel(shared_from_this());
+    if(!closed()){
+        loop_->update_channel(shared_from_this());
+    }
 }
 
 void Channel::remove_self_from_loop() {
+    closed_ = true;
     loop_->remove_channel(shared_from_this());
 }
 

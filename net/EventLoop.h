@@ -17,6 +17,7 @@
 
 #include "EPoll.h"
 #include "Channel.h"
+#include "Timeout.h"
 
 namespace ws{
 namespace net{
@@ -51,6 +52,7 @@ public:
 private:
     void handle_read();
     void run_pending_functors();
+    void handle_timeout_channels();
 
     bool looping_ { false };
     std::atomic<bool> quit_ { false };
@@ -62,6 +64,7 @@ private:
     int wakeup_fd_;
     std::shared_ptr<Channel> wakeup_channel_;
 
+    Timeout timeout_ { 5000 };
     EPoll epoll_{};
     typename std::thread::id tid_;
 };

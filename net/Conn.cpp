@@ -108,6 +108,7 @@ void Conn::setup_channel() {
     channel_->set_write_callback(std::bind(&Conn::handle_write, this));
     channel_->set_error_callback(std::bind(&Conn::handle_error, this));
     channel_->set_close_callback(std::bind(&Conn::handle_close, this));
+    channel_->enable_timeout();
     loop_->enqueue(std::bind(&Channel::enable_reading, channel_));
 }
 

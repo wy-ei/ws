@@ -8,8 +8,8 @@
 using namespace ws::http;
 
 int main(int argc, char* argv[]) {
-    ws::logging::start_async_backend(argv[0]);
-    ws::logging::set_level(ws::logging::INFO);
+//    ws::logging::start_async_backend(argv[0]);
+//    ws::logging::set_level(ws::logging::INFO);
 
     HTTPServer server;
 

@@ -40,6 +40,16 @@ public:
     int fd() const { return fd_; }
     int events() const { return events_; }
 
+    bool is_enable_timeout(){
+        return enable_timeout_;
+    }
+    void enable_timeout(){
+        enable_timeout_ = true;
+    }
+    void disable_timeout(){
+        enable_timeout_ = false;
+    }
+
 
     void set_events(int events){ events_ = events; }
     void set_revents(int revents){ revents_ = revents; }
@@ -71,6 +81,8 @@ private:
     EventCallback write_callback_;
     EventCallback close_callback_;
     EventCallback error_callback_;
+
+    bool enable_timeout_ { false };
 };
 
 } // end namespace net

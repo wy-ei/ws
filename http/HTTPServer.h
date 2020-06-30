@@ -18,7 +18,6 @@
 #include "Response.h"
 #include "Router.h"
 #include "../net/TCPServer.h"
-#include "../net/Timeout.h"
 #include "Context.h"
 
 namespace ws{
@@ -29,7 +28,7 @@ using namespace net;
 class HTTPServer {
 public:
     HTTPServer() = default;
-    HTTPServer(int thread_num): thread_num_(thread_num){}
+    explicit HTTPServer(int thread_num): thread_num_(thread_num){}
     bool listen(const std::string& host, unsigned short port);
     void use(const std::string& method, const std::string& pattern, const Handler& handler);
     void use(const std::shared_ptr<Middleware>& mw);
@@ -41,8 +40,6 @@ private:
 
     size_t thread_num_ = 8;
     std::atomic<bool> running_ {false};
-    // TODO
-    //Timeout timer {5000};
 
     std::unordered_map<int, Context*> connections;
 
