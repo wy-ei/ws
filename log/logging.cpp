@@ -3,6 +3,8 @@
 //
 
 #include "logging.h"
+#include <chrono>
+
 
 
 namespace ws {
@@ -47,15 +49,18 @@ Logger::Logger(const char *basename, int line, ws::logging::LEVEL level)
     }
 
 void Logger::output_time() {
-    // TODO ms
+    using namespace std::chrono;
+    system_clock::time_point now = system_clock::now();
+    long now_us = duration_cast<microseconds>(now.time_since_epoch()).count();
+    time_t now_time = system_clock::to_time_t(now);
+
     char time_buffer[64];
     struct tm tm_time{};
-    time_t now = time(nullptr);
-    localtime_r(&now, &tm_time);
+    localtime_r(&now_time, &tm_time);
     size_t n = strftime(time_buffer, sizeof(time_buffer), "%Y%m%d %H:%M:%S", &tm_time);
 
-    int ms = 0;
-    int len = snprintf(&time_buffer[n], sizeof(time_buffer) - n, ".%06d ", ms);
+    long us = now_us % 1000000;
+    snprintf(&time_buffer[n], sizeof(time_buffer) - n, ".%06ld ", us);
 
     stream_ << time_buffer;
 }

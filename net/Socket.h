@@ -36,6 +36,7 @@ class Socket{
         k_connected, k_disconnected, k_listening
     };
 public:
+    Socket() = delete;
     explicit Socket(int fd): sock_(fd){}
     Socket(int family, int type, int proto=0, int fd=-1): family_(family), type_(type), proto_(proto){
         if(fd == -1){
@@ -44,6 +45,32 @@ public:
             sock_ = fd;
         }
     }
+
+    Socket(Socket&) = delete;
+    Socket(const Socket&) = delete;
+    Socket(const Socket&&) = delete;
+    Socket(Socket&& sock) noexcept {
+        swap(sock);
+    }
+
+    void swap(Socket& sock) noexcept{
+        std::swap(state_, sock.state_);
+        std::swap(has_bound, sock.has_bound);
+        std::swap(family_, sock.family_);
+        std::swap(type_, sock.type_);
+        std::swap(proto_, sock.proto_);
+        std::swap(sock_, sock.sock_);
+    }
+
+    Socket& operator=(const Socket&) = delete;
+
+    Socket& operator=(Socket&& sock) noexcept{
+        if (connected())
+            shutdown(SHUT_RDWR);
+        swap(sock);
+        return *this;
+    }
+
     ~Socket();
 
     Socket accept();
@@ -53,7 +80,9 @@ public:
 
     int fd() const { return sock_; }
 
-    bool connected() const { return state_ == State::k_connected; }
+    bool connected() const {
+        return state_ == State::k_connected || state_ == State::k_listening;
+    }
 
     SocketAddress address() const;
 
@@ -68,7 +97,7 @@ private:
     int family_{};
     int type_{};
     int proto_{ 0 };
-    int sock_;
+    int sock_ { -1 };
 };
 
 } // end namespace net

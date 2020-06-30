@@ -1,6 +1,7 @@
 
 #include "../utils/test.h"
 #include "../net/Socket.h"
+#include "../log/logging.h"
 #include <thread>
 #include <chrono>
 using ws::TEST;
@@ -46,3 +47,4 @@ int socket_test(){
         t.join();
     });
 }
+

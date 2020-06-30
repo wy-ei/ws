@@ -13,8 +13,8 @@ namespace net{
 using namespace base;
 
 
-Conn::Conn(EventLoop* loop, const Socket& sock, SocketAddress  peer_address)
-    :sock_(sock), loop_(loop), peer_address_(std::move(peer_address)),
+Conn::Conn(EventLoop* loop, Socket sock, SocketAddress  peer_address)
+    :sock_(std::move(sock)), loop_(loop), peer_address_(std::move(peer_address)),
     channel_(std::make_shared<Channel>(loop, sock.fd())){
     LOG_DEBUG << "new conn:" << sock.fd();
 }
@@ -78,14 +78,15 @@ void Conn::handle_close() {
     LOG_DEBUG << "handle close";
 
     assert(state_ == State::k_disconnecting || state_ == State::k_connected);
-
     state_ = State::k_disconnected;
-    channel_->disable_all();
 
-    if(close_callback_){
-        std::shared_ptr<Conn> self(shared_from_this());
-        close_callback_(self);
-    }
+    loop_->run_in_loop([this]{
+        channel_->disable_all();
+        if(close_callback_){
+            std::shared_ptr<Conn> self(shared_from_this());
+            close_callback_(self);
+        }
+    });
 }
 
 void Conn::handle_error() {

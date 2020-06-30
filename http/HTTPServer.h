@@ -12,12 +12,12 @@
 #include <memory>
 #include <list>
 
-#include "../net/TCPServer.h"
 #include "./comm.h"
 #include "Middleware.h"
 #include "Request.h"
 #include "Response.h"
 #include "Router.h"
+#include "../net/TCPServer.h"
 #include "../net/Timeout.h"
 #include "Context.h"
 

@@ -30,7 +30,7 @@ public:
     }
 private:
     void listen_internal();
-    void handle_new_connection(const Socket& client_sock);
+    void handle_new_connection(Socket client_sock);
     void handle_accept();
     EventLoop* next_io_loop();
     void remove_connection(const std::shared_ptr<Conn>&);

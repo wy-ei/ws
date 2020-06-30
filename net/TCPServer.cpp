@@ -50,15 +50,15 @@ void TCPServer::handle_accept() {
     main_loop_->assert_in_loop_thread();
     Socket client = server_socket_.accept();
     if(client.fd() > 0){
-        handle_new_connection(client);
+        handle_new_connection(std::move(client));
     }else{
         LOG_DEBUG << "accept failed";
     }
 }
 
-void TCPServer::handle_new_connection(const Socket& client_sock) {
+void TCPServer::handle_new_connection(Socket client_sock) {
     auto loop = next_io_loop();
-    auto conn = std::make_shared<Conn>(loop, client_sock, server_socket_.address());
+    auto conn = std::make_shared<Conn>(loop, std::move(client_sock), server_socket_.address());
 
     connections_[conn->fd()] = conn;
 

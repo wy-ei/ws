@@ -187,6 +187,7 @@ ssize_t Socket::send(const std::string &data) {
 }
 
 void Socket::shutdown(int how) {
+    //::shutdown(sock_, SHUT_RDWR);
     ::shutdown(sock_, how);
 }
 

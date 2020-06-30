@@ -16,10 +16,10 @@ namespace http{
 using namespace net;
 
 bool Request::keep_alive(){
-    if(get_header_value("Context") == "close"){
+    if(get_header_value("Connection") == "close"){
         return false;
     }
-    if(version == "HTTP/1.0" && get_header_value("Context") != "Keep-Alive"){
+    if(version == "HTTP/1.0" && get_header_value("Connection") != "Keep-Alive"){
         return false;
     }
     return true;

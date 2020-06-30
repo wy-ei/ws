@@ -58,6 +58,7 @@ public:
     }
 
     ~Logger();
+
 private:
     std::ostringstream stream_;
     LEVEL level_;
@@ -76,8 +77,11 @@ public:
     ssize_t append(const char *data, size_t len);
 
     size_t writable_size() { return SIZE - write_index_; }
+
     size_t size() { return write_index_; }
+
     char *data() { return buffer_; }
+
     void reset() { write_index_ = 0; }
 
 private:
@@ -97,30 +101,33 @@ public:
         program_name_ = program_name;
         roll_file();
     }
+
     void roll_file();
 
     std::string build_filename();
+
     void write(const std::list<std::shared_ptr<Buffer>> &buffers);
 
 private:
     std::mutex mutex_;
     std::string program_name_;
-    int fd_ { -1 };
+    int fd_{-1};
     //int rolled_times {0};
-    ssize_t file_size_ { 0 };
+    ssize_t file_size_{0};
 };
 
 
 // log 的后端部分，用于接收前端传来的日志，在合适的时候把内容交给 LogFile 写入硬盘
 class Logging {
 public:
-    explicit Logging(const std::string& program_name);
+    explicit Logging(const std::string &program_name);
 
     void stop();
 
     ~Logging() {
         stop();
     }
+
 private:
     void append(const char *message, size_t len);
 
@@ -152,7 +159,7 @@ private:
 // 下面是暴露给用户的接口
 
 // 启动后端，默认前端会把内容写到标准输出
-void start_async_backend(const std::string& program_name);
+void start_async_backend(const std::string &program_name);
 
 void set_level(LEVEL level);
 

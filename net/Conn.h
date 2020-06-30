@@ -7,7 +7,7 @@
 
 #include <utility>
 #include <atomic>
-
+#include "../base/noncopyable.h"
 #include "comm.h"
 #include "Socket.h"
 #include "../base/Buffer.h"
@@ -17,7 +17,7 @@ namespace ws{
 namespace net{
 using namespace base;
 
-class Conn : public std::enable_shared_from_this<Conn>{
+class Conn : public std::enable_shared_from_this<Conn>, public noncopyable{
     /*
      * 初始时： k_connecting
      * 当回调函数和 channel 等都设置好了之后，状态变为 k_connected
@@ -41,7 +41,7 @@ public:
     using ErrorCallback = std::function<void()>;
 public:
     Conn() = delete;
-    Conn(EventLoop* loop, const Socket& sock, SocketAddress peer_address);
+    Conn(EventLoop* loop, Socket sock, SocketAddress peer_address);
     ~Conn();
 
     void init();

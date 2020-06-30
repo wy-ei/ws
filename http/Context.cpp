@@ -26,6 +26,7 @@ void Context::reset_context() {
         req_.reset();
         res_.reset();
     }else{
+        LOG_INFO << "shutdown";
         conn_->shutdown();
     }
 }
@@ -62,6 +63,8 @@ void Context::routing_request() {
 void Context::set_default_response_headers() {
     if (req_.keep_alive()) {
         res_.set_header("Connection", "Keep-Alive");
+    }else{
+        res_.set_header("Connection", "close");
     }
     res_.set_header("HTTPServer", "WS/0.1");
 }

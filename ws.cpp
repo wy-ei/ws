@@ -5,10 +5,12 @@
 #include "http/Middleware.h"
 #include "log/logging.h"
 
-int main() {
+using namespace ws::http;
+
+int main(int argc, char* argv[]) {
+    ws::logging::start_async_backend(argv[0]);
     ws::logging::set_level(ws::logging::INFO);
 
-    using namespace ws::http;
     HTTPServer server;
 
     auto sfm = std::make_shared<mw::StaticFileMiddleware>();

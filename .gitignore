@@ -6,3 +6,4 @@ CmakeFiles/
 cmake_install.cmake
 ws
 Makefile
+*.log
