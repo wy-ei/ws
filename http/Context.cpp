@@ -3,7 +3,7 @@
 //
 
 #include "Context.h"
-
+#include <iomanip>
 #include <iostream>
 
 namespace ws{
@@ -60,6 +60,7 @@ void Context::routing_request() {
     }
 }
 
+
 void Context::set_default_response_headers() {
     if (req_.keep_alive()) {
         res_.set_header("Connection", "Keep-Alive");
@@ -67,6 +68,7 @@ void Context::set_default_response_headers() {
         res_.set_header("Connection", "close");
     }
     res_.set_header("HTTPServer", "WS/0.1");
+    res_.set_header("Date", imp::gmt_time_now());
 }
 
 

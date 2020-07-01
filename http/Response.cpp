@@ -71,6 +71,10 @@ void Response::end() {
     assert(!end_has_called_);
     end_has_called_ = true;
 
+    if(!head_flushed_){
+        flush_head();
+    }
+
     if(chunk_encoding_){
         write_chunk("", 0);
     }

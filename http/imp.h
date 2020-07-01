@@ -38,6 +38,26 @@ size_t get_header_value_count(const Headers &headers, const std::string &key) {
     return std::distance(range.first, range.second);
 }
 
+
+std::string gmt_time_now();
+
+inline std::string time_to_str(time_t t){
+    struct tm timeinfo{};
+    gmtime_r(&t, &timeinfo);
+    char buffer[128];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %T GMT", &timeinfo);
+    return buffer;
+}
+
+inline time_t str_to_time(const std::string& s){
+    struct tm timeinfo{};
+    strptime(s.c_str(), "%a, %d %b %Y %T GMT", &timeinfo);
+    time_t t;
+    localtime_r(&t, &timeinfo);
+    return t;
+}
+
+
 const char *status_message(int status);
 
 const char *find_content_type(const std::string &, const std::unordered_map<std::string, std::string> &);

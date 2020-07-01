@@ -37,22 +37,39 @@ void mw::StaticFileMiddleware::call(Request &req, Response &res) {
         }
         // if is file
         if(S_ISREG(st.st_mode)){
-            const char* content_type = imp::find_content_type(path, file_extension_to_mimetype_map_);
-            res.set_header("Content-Type", content_type);
-
             // TODO: handle not modify
 
+            time_t file_modified_time = st.st_mtim.tv_sec;
+
+            LOG_INFO << "If-Modified-Since:" << req.has_header("If-Modified-Since");
+
+            if(req.has_header("If-Modified-Since")){
+                std::string modified_since_time_str = req.get_header_value("If-Modified-Since");
+                time_t modified_since_time = imp::str_to_time(modified_since_time_str);
+                LOG_DEBUG << file_modified_time << " - " << modified_since_time;
+                if(file_modified_time <= modified_since_time){
+                    res.set_status(304);
+                    res.end();
+                    return;
+                }
+            }
+
+            const char* content_type = imp::find_content_type(path, file_extension_to_mimetype_map_);
+            res.set_header("Content-Type", content_type);
             res.set_status(200);
             res.set_header("Content-Length", std::to_string(st.st_size));
 
             int fd = open(path.c_str(), O_RDONLY);
             if(fd < 0) {
                 LOG_ERROR << "can't open fill: " << strerror(errno);
-                res.set_status(500);
-                res.write("can't open fill");
+                res.set_status(403);
+                res.write("Forbidden");
                 res.end();
                 return;
             }else{
+                std::string cache_control = "private, max-age=36000, no-cache";
+                res.set_header("Cache-Control", cache_control);
+                res.set_header("Last-Modified", imp::time_to_str(file_modified_time));
                 char buff[8000];
                 int n = 0;
                 while ((n = read(fd, buff, 4000)) > 0){
