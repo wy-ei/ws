@@ -4,8 +4,8 @@
 时候写了不少短小的代码片段，但是不成体系。最近萌生了自己实现一个 web 服务器的想法，这是我的初步实现。
 
 开始采用了 `select` + 线程池的模型，主线程 accept 后，把处理请求的任务加入到线程池的任务队列中。
-后来尝试实现 Reactor 模式，根据自己的理解折腾了几天，大体实现了基本框架。但是代码比较混乱，而且经常出现未知 BUG。
-后来读了陈硕写的 《linux多线程服务端编程》，学习了 muduo 的设计，我模仿着对模块进行了划分，目前模块已经比较清晰了。
+后来尝试实现 Reactor 模式，根据自己的理解折腾了几天，大体实现了基本框架。后来读了陈硕写的 《linux多线程服务端编程》，
+了解了 Reactor 模式中的一些有用的抽象，比如 Channel、EventLoop 等，之后我对代码进行了抽象，目前模块已经比较清晰了。
 
 
 ## 示例
@@ -15,9 +15,9 @@
 ```c++
 #include "http/HTTPServer.h"
 #include "http/Middleware.h"
+using namespace ws::http;
 
 int main() {
-    using namespace ws::http;
     HTTPServer server;
 
     auto sfm = std::make_shared<mw::StaticFileMiddleware>();
@@ -57,5 +57,6 @@ $ ./ws
 
 ## TODO
 
-- 提高代码稳定性
-- 断开超时未响应连接
+- [x] 断开超时未响应连接
+- [ ] 支持路由的模式匹配
+- [ ] 支持 POST 请求的 4 种常见格式

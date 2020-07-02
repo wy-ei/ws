@@ -27,17 +27,15 @@ bool Request::keep_alive(){
 
 
 void Request::parse_query_string(const std::string &s) {
-    ws::str::split(s.data(), s.data()+s.size(), '&', [this](const char *b, const char *e){
+    ws::str::split(s, '&', [this](const std::string& span){
         std::string key;
         std::string val;
-        auto key_end = std::find(b, e, '=');
-        key.assign(b, key_end);
-        key_end ++;
-        if(key_end != e){
-            val.assign(key_end, e);
+        int i =  span.find('=');
+        key = span.substr(0, i);
+        if(i != std::string::npos){
+            val = span.substr(i+1);
         }
-        // this->params.emplace(decode_url(key), decode_url(val));
-        this->params.emplace(key, val);
+        this->query.emplace(key, val);
     });
 }
 
@@ -95,6 +93,7 @@ void Request::execute_parse(const char *data, size_t len) {
         }
         else if(current_state_ == PARSE_STATE::BODY){
             // TODO
+            parse_body();
             current_state_ = PARSE_STATE::END;
             return;
         }
@@ -155,6 +154,10 @@ int Request::reset() {
     target.clear();
     params.clear();
     current_state_ = PARSE_STATE::REQUEST_LINE;
+}
+
+void Request::parse_body() {
+
 }
 
 

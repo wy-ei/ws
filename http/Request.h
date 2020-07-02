@@ -49,7 +49,7 @@ public:
     std::string version;
     std::string target;
     Params params;  // TODO  params["user"]
-    // TODO: query;
+    Params query;
 
 
     bool has_header(const std::string& key) const;
@@ -72,6 +72,7 @@ private:
     bool parse_request_line(const char* line, size_t size);
     void parse_header_line(const char* line, size_t size);
     void parse_query_string(const std::string& s);
+    void parse_body();
 
     Buffer buffer_;
 

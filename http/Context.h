@@ -30,7 +30,6 @@ public:
         req_(conn), res_(conn){
 
         set_callbacks();
-
     }
     ~Context(){
         LOG_DEBUG << "context die";
