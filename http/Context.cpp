@@ -5,13 +5,13 @@
 #include "Context.h"
 #include <iomanip>
 #include <iostream>
+#include "../base/Date.h"
 
 namespace ws{
 namespace http{
 
 void Context::on_message(const char *data, size_t len) {
     std::string message(data, len);
-    LOG_DEBUG << "message comming:" << message;
     req_.execute_parse(data, len);
 }
 
@@ -68,7 +68,7 @@ void Context::set_default_response_headers() {
         res_.set_header("Connection", "close");
     }
     res_.set_header("HTTPServer", "WS/0.1");
-    res_.set_header("Date", imp::gmt_time_now());
+    res_.set_header("Date", Date().to_utc_string());
 }
 
 

@@ -4,6 +4,7 @@
 
 #include "logging.h"
 #include <chrono>
+#include "../base/Date.h"
 
 
 
@@ -102,14 +103,10 @@ std::string LogFile::build_filename() {
 
     filename += program_name_;
 
+    Date date;
+    filename += date.to_locale_string("-%Y%m%d-%H%M%S-");
+
     char buffer[256];
-    struct tm tm_time{};
-    time_t now = time(nullptr);
-    localtime_r(&now, &tm_time);
-    size_t n = strftime(buffer, sizeof(buffer), "-%Y%m%d-%H%M%S-", &tm_time);
-
-    filename += buffer;
-
     if (::gethostname(buffer, sizeof buffer) == 0){
         buffer[sizeof(buffer) - 1] = '\0';
         filename += buffer;

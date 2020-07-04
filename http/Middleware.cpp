@@ -12,6 +12,7 @@
 #include "../utils/path.h"
 #include "Response.h"
 #include "Request.h"
+#include "../base/Date.h"
 
 namespace ws{
 namespace http{
@@ -37,17 +38,13 @@ void mw::StaticFileMiddleware::call(Request &req, Response &res) {
         }
         // if is file
         if(S_ISREG(st.st_mode)){
-            // TODO: handle not modify
-
-            time_t file_modified_time = st.st_mtim.tv_sec;
-
-            LOG_INFO << "If-Modified-Since:" << req.has_header("If-Modified-Since");
+            Date file_modified_date(st.st_mtim.tv_sec);
 
             if(req.has_header("If-Modified-Since")){
-                std::string modified_since_time_str = req.get_header_value("If-Modified-Since");
-                time_t modified_since_time = imp::str_to_time(modified_since_time_str);
-                LOG_DEBUG << file_modified_time << " - " << modified_since_time;
-                if(file_modified_time <= modified_since_time){
+                std::string modified_since_str = req.get_header_value("If-Modified-Since");
+                Date last_modified_date = Date::from_utc_string(modified_since_str);
+
+                if(file_modified_date <= last_modified_date){
                     res.set_status(304);
                     res.end();
                     return;
@@ -69,7 +66,7 @@ void mw::StaticFileMiddleware::call(Request &req, Response &res) {
             }else{
                 std::string cache_control = "private, max-age=36000, no-cache";
                 res.set_header("Cache-Control", cache_control);
-                res.set_header("Last-Modified", imp::time_to_str(file_modified_time));
+                res.set_header("Last-Modified", file_modified_date.to_utc_string());
                 char buff[8000];
                 int n = 0;
                 while ((n = read(fd, buff, 4000)) > 0){

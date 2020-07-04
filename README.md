@@ -10,7 +10,7 @@
 
 ## 示例
 
-在用户接口上我模仿了 express 的设计，使用 use 方法，可以添加中间件、路由。
+在用户接口上我模仿了 express 的设计，重载 use 方法，可以添加中间件、用户处理函数。
 
 ```c++
 #include "http/HTTPServer.h"
@@ -33,9 +33,14 @@ int main() {
         res.end();
     });
 
-    server.use("GET", "/world", [](Request &req, Response &res) {
-        std::string text = "world";
+    server.use("POST", "/form", [](Request &req, Response &res) {
         res.set_status(200);
+        std::string text;
+        if(req.is_multipart_form_data() && req.form_data.has("foo")){
+            text = req.form_data.get("foo").content;
+        }else{
+            text = "<null>";
+        }
         res.write(text);
         res.end();
     });
@@ -48,7 +53,6 @@ int main() {
 
 开发环境为 WSL - Ubuntu 18.04 - C++11，用下面几行命令即可编译并运行
 
-
 ```
 $ cmake CMakeLists.txt
 $ make
@@ -59,4 +63,4 @@ $ ./ws
 
 - [x] 断开超时未响应连接
 - [ ] 支持路由的模式匹配
-- [ ] 支持 POST 请求的 4 种常见格式
+- [x] 支持 POST 请求的常见格式

@@ -14,14 +14,17 @@ int main(int argc, char* argv[]) {
     HTTPServer server;
 
     auto sfm = std::make_shared<mw::StaticFileMiddleware>();
-
-    sfm->add_static_file_dir("/mnt/c/Users/dodo/work/code/notebook/_site/");
+    sfm->add_static_file_dir("/mnt/c/Users/dodo/work/code/webserver/test/");
     server.use(sfm);
 
-    server.use("GET", "/hello", [](Request &req, Response &res) {
-        std::string text = "hello";
-        res.set_header("cookie", "bbb=123");
+    server.use("POST", "/form", [](Request &req, Response &res) {
         res.set_status(200);
+        std::string text;
+        if(req.is_multipart_form_data() && req.form_data.has("foo")){
+            text = req.form_data.get("foo").content;
+        }else{
+            text = "<null>";
+        }
         res.write(text);
         res.end();
     });

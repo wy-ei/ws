@@ -10,10 +10,13 @@
 #include "../utils/str.h"
 #include "imp.h"
 #include "Request.h"
+#include "FormData.h"
 
 namespace ws{
 namespace http{
 using namespace net;
+
+
 
 bool Request::keep_alive(){
     if(get_header_value("Connection") == "close"){
@@ -92,10 +95,13 @@ void Request::execute_parse(const char *data, size_t len) {
             buffer_.consume(len);
         }
         else if(current_state_ == PARSE_STATE::BODY){
-            // TODO
-            parse_body();
-            current_state_ = PARSE_STATE::END;
-            return;
+            bool finished = read_body();
+            if(finished){
+                parse_body();
+                current_state_ = PARSE_STATE::END;
+            }else{
+                return;
+            }
         }
     }
     if(parse_complete_callback_){
@@ -154,11 +160,46 @@ int Request::reset() {
     target.clear();
     params.clear();
     current_state_ = PARSE_STATE::REQUEST_LINE;
+    form_data.del_all();
 }
 
-void Request::parse_body() {
-
+bool Request::read_body() {
+    auto len = imp::get_header_value_uint64(headers, "Content-Length", -1);
+    if(len == -1){
+        // TODO
+        // chunked content
+    }else{
+        int size = std::min(buffer_.readable_size(), len - body.size());
+        body.append(buffer_.peek(), size);
+        buffer_.consume(size);
+        return body.size() == len;
+    }
 }
+
+bool Request::read_chunked_content() {
+    // 状态机
+}
+
+
+std::string parse_multipart_boundary(const std::string &content_type) {
+    auto pos = content_type.find("boundary=");
+    if (pos == std::string::npos) { return ""; }
+
+    auto boundary = content_type.substr(pos + 9);
+    return boundary;
+}
+
+
+bool Request::parse_body() {
+    if(is_multipart_form_data()){
+        MultipartFormDataParser parser(form_data);
+        auto boundary = parse_multipart_boundary(get_header_value("Content-Type"));
+        parser.set_boundary(boundary);
+        parser.parse(body);
+    }
+}
+
+
 
 
 } // end namespace http

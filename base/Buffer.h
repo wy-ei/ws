@@ -77,6 +77,7 @@ public:
     }
 
     const char *find(const char *needle, size_t len) const;
+    std::string::size_type find(const std::string& needle) const;
 
     void append(const char *data, size_t len);
 

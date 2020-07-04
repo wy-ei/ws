@@ -55,7 +55,7 @@ void EventLoop::loop() {
             }
         }
         run_pending_functors();
-        handle_timeout_channels();
+        //handle_timeout_channels();
     }
     looping_ = false;
 }

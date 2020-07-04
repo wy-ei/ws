@@ -15,6 +15,7 @@
 #include "./comm.h"
 #include "../net/Conn.h"
 #include "../base/Buffer.h"
+#include "./FormData.h"
 
 namespace ws{
 namespace http{
@@ -34,6 +35,7 @@ class Request {
         os << "}\n";
         os << "body:(" << req.body.size() << ")\n";
         os << req.body << "<eof>\n";
+        os << "form_data" << req.form_data << '\n';
         os << "<<<<<<<<<<<< request <<<<<<<<<<<<\n\n";
 
         return os;
@@ -50,6 +52,8 @@ public:
     std::string target;
     Params params;  // TODO  params["user"]
     Params query;
+    FormData form_data;
+
 
 
     bool has_header(const std::string& key) const;
@@ -68,11 +72,23 @@ public:
     }
 
     int reset();
+
+    bool is_multipart_form_data() const {
+        const auto &content_type = get_header_value("Content-Type");
+        return !content_type.find("multipart/form-data");
+    }
+    bool is_chunked_transfer_encoding() {
+        std::string encoding = get_header_value("Transfer-Encoding");
+        return strcasecmp(encoding.c_str(), "chunked") == 0;
+    }
 private:
     bool parse_request_line(const char* line, size_t size);
     void parse_header_line(const char* line, size_t size);
     void parse_query_string(const std::string& s);
-    void parse_body();
+    bool read_body();
+    bool parse_body();
+    bool read_chunked_content();
+
 
     Buffer buffer_;
 

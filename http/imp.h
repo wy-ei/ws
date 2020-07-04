@@ -32,31 +32,20 @@ const std::string& get_header_value(const Headers &headers, const std::string &k
     return def;
 }
 
+inline uint64_t get_header_value_uint64(const Headers &headers, const std::string& key,
+        uint64_t def = 0) {
+    auto it = headers.find(key);
+    if (it != headers.end()) {
+        return std::strtoull(it->second.data(), nullptr, 10);
+    }
+    return def;
+}
+
 inline
 size_t get_header_value_count(const Headers &headers, const std::string &key) {
     auto range = headers.equal_range(key);
     return std::distance(range.first, range.second);
 }
-
-
-std::string gmt_time_now();
-
-inline std::string time_to_str(time_t t){
-    struct tm timeinfo{};
-    gmtime_r(&t, &timeinfo);
-    char buffer[128];
-    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %T GMT", &timeinfo);
-    return buffer;
-}
-
-inline time_t str_to_time(const std::string& s){
-    struct tm timeinfo{};
-    strptime(s.c_str(), "%a, %d %b %Y %T GMT", &timeinfo);
-    time_t t;
-    localtime_r(&t, &timeinfo);
-    return t;
-}
-
 
 const char *status_message(int status);
 

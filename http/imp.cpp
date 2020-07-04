@@ -13,18 +13,6 @@ namespace http{
 
 namespace imp{
 
-std::string gmt_time_now() {
-    // Wed, 21 Oct 2015 07:28:00 GMT
-    auto now = std::chrono::system_clock::now();
-    auto itt = std::chrono::system_clock::to_time_t(now);
-
-    std::ostringstream ss;
-    ss << std::put_time(gmtime(&itt), "%a, %d %b %Y %T GMT");
-    return ss.str();
-}
-
-
-
 const char* find_content_type(const std::string &path,
                   const std::unordered_map<std::string, std::string> &user_defined_dict) {
     int i = path.rfind('.');

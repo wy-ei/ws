@@ -22,5 +22,12 @@ const char *Buffer::find(const char *needle, size_t len) const {
     return p == end ? nullptr : p;
 }
 
+std::string::size_type Buffer::find(const std::string& needle) const {
+    std::string s(peek(), std::min(needle.size() + 10, readable_size()));
+    const char *p = find(needle.data(), needle.size());
+    if(p == nullptr) return std::string::npos;
+    return p - peek();
+}
+
 } // end namespace base
 } // end namespace ws
