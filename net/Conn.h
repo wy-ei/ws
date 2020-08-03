@@ -7,9 +7,9 @@
 
 #include <utility>
 #include <atomic>
-#include "../base/noncopyable.h"
 #include "comm.h"
 #include "Socket.h"
+#include "../base/noncopyable.h"
 #include "../base/Buffer.h"
 
 

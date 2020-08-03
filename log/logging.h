@@ -24,6 +24,7 @@
 #include <cassert>
 #include <memory>
 #include <atomic>
+#include <libgen.h>
 
 namespace ws {
 namespace logging {
@@ -47,7 +48,7 @@ using std::placeholders::_2;
 // 日志系统的前端主要构件，收集用户的日志内容，格式化后传给后端来保存
 class Logger {
 public:
-    Logger(const char *basename, int line, LEVEL level);
+    Logger(const char *file, int line, LEVEL level);
 
     void output_time();
 
@@ -62,7 +63,7 @@ public:
 private:
     std::ostringstream stream_;
     LEVEL level_;
-    const char *basename_;
+    std::string basename_;
     int line_;
 };
 
@@ -112,7 +113,6 @@ private:
     std::mutex mutex_;
     std::string program_name_;
     int fd_{-1};
-    //int rolled_times {0};
     ssize_t file_size_{0};
 };
 
@@ -179,11 +179,11 @@ void stop_async_backend();
  * LOG_INFO << "hello world";
  */
 
-#define LOG_TRACE if(ws::logging::logging_level <=ws::logging::TRACE )  ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::TRACE)
-#define LOG_DEBUG if(ws::logging::logging_level <=ws::logging::DEBUG ) ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::DEBUG)
-#define LOG_INFO if(ws::logging::logging_level <=ws::logging::INFO ) ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::INFO)
-#define LOG_WARN ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::WARN)
-#define LOG_ERROR ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::ERROR)
-#define LOG_FATAL ws::logging::detail::Logger(basename(__FILE__), __LINE__, ws::logging::FATAL)
+#define LOG_TRACE if(ws::logging::logging_level <=ws::logging::TRACE )  ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::TRACE)
+#define LOG_DEBUG if(ws::logging::logging_level <=ws::logging::DEBUG ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::DEBUG)
+#define LOG_INFO if(ws::logging::logging_level <=ws::logging::INFO ) ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::INFO)
+#define LOG_WARN ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::WARN)
+#define LOG_ERROR ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::ERROR)
+#define LOG_FATAL ws::logging::detail::Logger(__FILE__, __LINE__, ws::logging::FATAL)
 
 #endif //WS_LOGGING_H

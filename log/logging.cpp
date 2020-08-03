@@ -2,8 +2,9 @@
 // Created by wangyu on 2020/6/24.
 //
 
-#include "logging.h"
 #include <chrono>
+#include <algorithm>
+#include "logging.h"
 #include "../base/Date.h"
 
 
@@ -42,11 +43,16 @@ std::shared_ptr<Logging> p_logging;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-Logger::Logger(const char *basename, int line, ws::logging::LEVEL level)
-    : level_(level), basename_(basename), line_(line) {
+
+Logger::Logger(const char *file, int line, ws::logging::LEVEL level)
+    : level_(level), line_(line) {
         output_time();
         stream_ << std::this_thread::get_id();
         stream_ << LevelName[level];
+
+        char buffer[100];
+        basename_r(file, buffer);
+        basename_.append(buffer);
     }
 
 void Logger::output_time() {

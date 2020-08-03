@@ -161,23 +161,28 @@ int Request::reset() {
     params.clear();
     current_state_ = PARSE_STATE::REQUEST_LINE;
     form_data.del_all();
+    return 0;
 }
 
 bool Request::read_body() {
-    auto len = imp::get_header_value_uint64(headers, "Content-Length", -1);
+    uint64_t len = imp::get_header_value_uint64(headers, "Content-Length", -1);
     if(len == -1){
         // TODO
         // chunked content
+        return true;
     }else{
-        int size = std::min(buffer_.readable_size(), len - body.size());
+        size_t size = std::min(buffer_.readable_size(), static_cast<size_t>(len) - body.size());
         body.append(buffer_.peek(), size);
         buffer_.consume(size);
         return body.size() == len;
     }
+
 }
 
 bool Request::read_chunked_content() {
+    // TODO
     // 状态机
+    return true;
 }
 
 
@@ -197,6 +202,7 @@ bool Request::parse_body() {
         parser.set_boundary(boundary);
         parser.parse(body);
     }
+    return true;
 }
 
 

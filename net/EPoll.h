@@ -23,7 +23,7 @@ class EPoll{
 public:
     explicit EPoll()
         :events_(k_events_max_size){
-
+        
         epoll_fd_ = epoll_create(5);
         assert(epoll_fd_ >= 0);
     }
@@ -38,7 +38,7 @@ public:
     void add_channel(const std::shared_ptr<Channel>& channel);
     void remove_channel(const std::shared_ptr<Channel>&  channel);
     bool has_channel(const std::shared_ptr<Channel>& channel) const;
-    int fd(){ return epoll_fd_; }
+    int fd() const{ return epoll_fd_; }
 private:
     void update(int op, const std::shared_ptr<Channel>& channel);
 
