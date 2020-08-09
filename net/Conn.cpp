@@ -69,8 +69,6 @@ void Conn::handle_write() {
     if(n > 0){
         write_buffer_.consume(n);
         if(write_buffer_.readable_size() == 0){
-            // 当前没有数据可写了，而且用户不会在写入内容了
-            // 但是并不 shutdown 读端，这样可以在对方关闭后，触发 close 回调
             channel->disable_writing();
             event_loop_->update_channel(channel);
         }
