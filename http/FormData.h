@@ -69,7 +69,7 @@ public:
         return it != form_.end();
     }
 
-    FormDataItem& get(const std::string& name){
+    const FormDataItem& get(const std::string& name){
         auto it = form_.find(name);
         if(it != form_.end()){
             return it->second;

@@ -12,7 +12,7 @@
 #include <memory>
 #include <list>
 
-#include "./comm.h"
+#include "comm.h"
 #include "mw/Middleware.h"
 #include "Request.h"
 #include "Response.h"
