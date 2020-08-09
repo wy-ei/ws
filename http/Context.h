@@ -15,7 +15,7 @@
 #include "Request.h"
 #include "Response.h"
 #include "Router.h"
-#include "Middleware.h"
+#include "mw/Middleware.h"
 #include "../log/logging.h"
 
 namespace ws{

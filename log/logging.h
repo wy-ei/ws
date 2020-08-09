@@ -52,6 +52,8 @@ public:
 
     void output_time();
 
+    void print_stack_trace();
+
     template<typename V>
     Logger &operator<<(const V &value) {
         stream_ << value;

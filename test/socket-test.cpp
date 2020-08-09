@@ -9,7 +9,7 @@ using ws::assert_true;
 
 using namespace ws::net;
 
-int socket_test(){
+void socket_test(){
     TEST("socket", []{
         Socket server(AF_INET, SOCK_STREAM, 0);
         Socket client(AF_INET, SOCK_STREAM, 0);

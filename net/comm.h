@@ -27,10 +27,14 @@
 namespace ws{
 namespace net{
 
+const uint32_t WS_NONE = 0;
+const uint32_t WS_READABLE = 1 << 0;
+const uint32_t WS_WRITABLE = 1 << 1;
 
 #define WS_DEBUG 1
 using socket_t = int;
 
+class Conn;
 class Channel;
 class Socket;
 class EventLoop;

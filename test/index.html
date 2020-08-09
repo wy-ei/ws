@@ -8,6 +8,7 @@
 <body>
 <div>
     <input type="file" name="file-upload" id="file">
+    <button id="btn">GET</button>
 
 </div>
 
@@ -40,9 +41,19 @@
             bcd: 2342123
         }
 
-        fetch("http://127.0.0.1:8006/form", {
+        fetch("/form", {
             method: "POST",
             body: form
+        });
+
+
+        let btn = document.querySelector("#btn");
+        btn.addEventListener('click', ()=>{
+            fetch("/ws.cpp", {
+               method: "GET"
+            }).then(res => res.text()).then(data => {
+                console.log(data);
+            });
         });
     </script>
 </body>

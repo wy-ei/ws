@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "HTTPServer.h"
-#include "Middleware.h"
+#include "mw/Middleware.h"
 
 namespace ws{
 namespace http{
@@ -20,8 +20,6 @@ using std::string;
 bool HTTPServer::listen(const std::string& host, unsigned short port) {
     TCPServer server(thread_num_);
     server.set_connection_open_callback(std::bind(&HTTPServer::on_connection, this, _1));
-    server.set_connection_close_callback(std::bind(&HTTPServer::on_close, this, _1));
-
     return server.listen(host, port);
 }
 
@@ -37,6 +35,7 @@ void HTTPServer::on_connection(std::shared_ptr<Conn> conn) {
     auto context = new Context(conn, router_, middleware_);
     conn->context(context);
     conn->set_message_callback(std::bind(&Context::on_message, context, _1, _2));
+    conn->set_close_callback(std::bind(&HTTPServer::on_close, this, _1));
 }
 
 void HTTPServer::on_close(const std::shared_ptr<Conn>& conn) {

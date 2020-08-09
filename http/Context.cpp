@@ -27,7 +27,7 @@ void Context::reset_context() {
         res_.reset();
     }else{
         LOG_INFO << "shutdown";
-        conn_->shutdown();
+        conn_->close_connection();
     }
 }
 

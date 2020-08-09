@@ -4,11 +4,10 @@
 
 #include <stack>
 #include <utility>
-#include "path.h"
-#include "str.h"
 #include <algorithm>
 
-
+#include "path.h"
+#include "str.h"
 
 namespace ws {
 

@@ -49,9 +49,6 @@ size_t get_header_value_count(const Headers &headers, const std::string &key) {
 
 const char *status_message(int status);
 
-const char *find_content_type(const std::string &, const std::unordered_map<std::string, std::string> &);
-
-
 } // end namespace imp
 
 

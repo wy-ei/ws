@@ -22,9 +22,6 @@ public:
     explicit TCPServer(int io_thread_num): io_thread_num_(io_thread_num){}
     bool listen(const std::string& host, unsigned short port);
 
-    void set_connection_close_callback(const ConnectionCallback& callback){
-        connection_close_callback_ = callback;
-    }
     void set_connection_open_callback(const ConnectionCallback& callback){
         connection_callback_ = callback;
     }
@@ -33,14 +30,13 @@ private:
     void handle_new_connection(Socket client_sock);
     void handle_accept();
     EventLoop* next_io_loop();
-    void remove_connection(const std::shared_ptr<Conn>&);
 
     std::list<EventLoop*> event_loops_;
     EventLoop* main_loop_ { nullptr };
 
     Socket server_socket_ { AF_INET, SOCK_STREAM, 0 };
 
-    size_t io_thread_num_ { 8 };
+    size_t io_thread_num_ { 1 };
     std::atomic<bool> running_ {false};
 
     std::unordered_map<int, std::shared_ptr<Conn>> connections_;

@@ -1,9 +1,9 @@
 #include <unistd.h>
 #include "../utils/perf.h"
 
-int perf_test(){
+void perf_test(){
     {
-        ScopeRunningTime SRT;
+        ScopeRunningTime srt;
         double b = 3.14;
         for(int i=0;i<1000000000;i++){
             b += 3.14 * 3.14;
@@ -11,7 +11,7 @@ int perf_test(){
     }
 
     {
-        ScopeRunningTime SRT;
+        ScopeRunningTime srt;
         sleep(1);
     }
 }

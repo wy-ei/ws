@@ -4,90 +4,103 @@
 
 #include <cassert>
 #include <vector>
-#include "../log/logging.h"
 
 #include "EventLoop.h"
+#include "Conn.h"
+#include "../log/logging.h"
+
+
 
 namespace ws{
 namespace net{
 
+thread_local EventLoop* thread_local_event_loop;
 
-__thread EventLoop* this_thread_event_loop = nullptr;
-
-EventLoop::EventLoop() :quit_(false){
-    if(this_thread_event_loop){
+EventLoop::EventLoop(){
+    if(thread_local_event_loop != nullptr){
         LOG_ERROR << "more than one event loop in this thread.";
         pthread_exit(nullptr);
     }else{
-        this_thread_event_loop = this;
+        thread_local_event_loop = this;
     }
-
     tid_ = std::this_thread::get_id();
-    wakeup_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
-    assert(wakeup_fd_ >= 0);
-    wakeup_channel_ = std::make_shared<Channel>(this, wakeup_fd_);
-    wakeup_channel_->set_read_callback(std::bind(&EventLoop::handle_read, this));
-    wakeup_channel_->enable_reading();
+    setup_wakeup_channel();
 }
 
 EventLoop::~EventLoop() {
-    this_thread_event_loop = nullptr;
-    wakeup_channel_->disable_all();
-    wakeup_channel_->remove_self_from_loop();
-    ::close(wakeup_channel_->fd());
-    this_thread_event_loop = nullptr;
+    thread_local_event_loop = nullptr;
+    remove_channel(wakeup_channel_);
+    thread_local_event_loop = nullptr;
 }
 
-void EventLoop::loop() {
+void EventLoop::start() {
     assert_in_loop_thread();
     assert(!looping_);
     looping_ = true;
 
-    std::vector<std::shared_ptr<Channel>> active_channels;
-    quit_ = false;
-    while (!quit_){
-        active_channels = epoll_.wait(10000);
-        for(auto& channel: active_channels){
-            LOG_DEBUG << "epoll:" << epoll_.fd() << "  active channel:" << channel->fd();
-            channel->handle_event();
-            if(channel->is_enable_timeout()){
+    std::vector<Channel*> active_channels;
+    stop_ = false;
+    while (!stop_){
+        timeval tv {};
+        tv.tv_sec = 1;
+
+        const std::vector<FileEvent>& events = poller_.poll(&tv);
+        for(const auto& ev: events){
+            auto channel = fd_to_channel_[ev.fd];
+            LOG_DEBUG << channel->to_string() << " ev.mask: " << ev.mask;
+            channel->handle_event(ev.mask);
+            if(!channel->closed() && channel->is_enable_timeout()){
                 timeout_.add(channel);
             }
         }
-        run_pending_functors();
-        //handle_timeout_channels();
+        run_pending_tasks();
+        handle_timeout_channels();
     }
     looping_ = false;
 }
 
-void EventLoop::quit() {
-    quit_ = true;
+void EventLoop::stop() {
+    stop_ = true;
     if(!is_in_loop_thread()){
         wakeup();
     }
 }
 
-void EventLoop::wakeup() {
+void EventLoop::setup_wakeup_channel() {
+    int fds[2];
+    pipe(fds);
+    wakeup_fd_ = fds[1];
+    // wakeup_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+
+    int read_fd = fds[0];
+    auto func = [](int fd){
+        uint64_t one = 1;
+        ssize_t n = ::read(fd, &one, sizeof one);
+    };
+    wakeup_channel_ = std::make_shared<Channel>(read_fd);
+    wakeup_channel_->set_read_callback(std::bind(func, read_fd));
+    wakeup_channel_->enable_reading();
+    wakeup_channel_->name = "wakeup channel";
+    add_channel(wakeup_channel_);
+}
+
+
+void EventLoop::wakeup() const {
     uint64_t one = 1;
     int n = ::write(wakeup_fd_, &one, sizeof(one));
     assert(n == sizeof(one));
 }
 
-void EventLoop::handle_read(){
-    uint64_t one = 1;
-    ssize_t n = ::read(wakeup_fd_, &one, sizeof one);
-    assert(n == sizeof(one));
-}
 
-void EventLoop::enqueue(EventLoop::Functor fn) {
+void EventLoop::enqueue(EventLoop::Task fn) {
     {
-        std::unique_lock<std::mutex> lock(pending_functors_mutex_);
-        pending_functors_.push_back(std::move(fn));
+        std::unique_lock<std::mutex> lock(pending_tasks_mutex_);
+        pending_tasks_.push_back(std::move(fn));
     }
 
     // 没有在该 loop 所在线程调用此方法，loop 线程此时可能阻塞在 epoll 上
     // 因此需要唤醒
-    if(!is_in_loop_thread() || calling_pending_functors_){
+    if(!is_in_loop_thread() || calling_pending_tasks_){
         wakeup();
     }
 }
@@ -96,22 +109,21 @@ bool EventLoop::is_in_loop_thread() {
     return tid_ == std::this_thread::get_id();
 }
 
-void EventLoop::run_pending_functors() {
-    std::vector<Functor> functors_;
-    calling_pending_functors_ = true;
-
+void EventLoop::run_pending_tasks() {
+    std::vector<Task> tasks_;
+    calling_pending_tasks_ = true;
     {
-        std::unique_lock<std::mutex> lock(pending_functors_mutex_);
-        functors_.swap(pending_functors_);
+        std::unique_lock<std::mutex> lock(pending_tasks_mutex_);
+        tasks_.swap(pending_tasks_);
     }
 
-    for(const Functor& fn: functors_){
+    for(const Task& fn: tasks_){
         fn();
     }
-    calling_pending_functors_ = false;
+    calling_pending_tasks_ = false;
 }
 
-void EventLoop::run_in_loop(EventLoop::Functor fn) {
+void EventLoop::run_in_loop(EventLoop::Task fn) {
     if(is_in_loop_thread()){
         fn();
     }
@@ -121,45 +133,62 @@ void EventLoop::run_in_loop(EventLoop::Functor fn) {
 }
 
 void EventLoop::assert_in_loop_thread() {
-    assert(tid_ == std::this_thread::get_id());
+    assert(tid_ == thread_local_event_loop->tid_);
 }
 
-void EventLoop::add_channel(const std::shared_ptr<Channel>& channel) {
-    if(is_in_loop_thread()){
-        epoll_.add_channel(channel);
-    }else{
-        run_in_loop([channel,this]{
-            epoll_.add_channel(channel);
-        });
+void EventLoop::add_channel(std::shared_ptr<Channel> channel) {
+    assert_in_loop_thread();
+    if(channel->is_enable_timeout()){
+        timeout_.add(channel);
     }
+    int fd = channel->fd();
+    assert(fd_to_channel_.find(fd) == fd_to_channel_.end());
+    fd_to_channel_[fd] = channel;
+
+    update_channel(channel);
 }
 
-void EventLoop::update_channel(const std::shared_ptr<Channel> &channel) {
-    add_channel(channel);
-}
-
-void EventLoop::remove_channel(const std::shared_ptr<Channel>& channel) {
-    if(is_in_loop_thread()){
-        epoll_.remove_channel(channel);
+void EventLoop::update_channel(std::shared_ptr<Channel> channel) {
+    assert_in_loop_thread();
+    int fd = channel->fd();
+    assert(fd_to_channel_.find(fd) != fd_to_channel_.end());
+    if(channel->is_enable_reading()){
+        poller_.add_event(fd, WS_READABLE);
     }else{
-        run_in_loop([channel,this]{
-            epoll_.remove_channel(channel);
-        });
+        poller_.delete_event(fd, WS_READABLE);
     }
+    if(channel->is_enable_writing()){
+        poller_.add_event(fd, WS_WRITABLE);
+    }else{
+        poller_.delete_event(fd, WS_WRITABLE);
+    }
+    wakeup();
+}
+
+void EventLoop::remove_channel(std::shared_ptr<Channel> channel) {
+    assert_in_loop_thread();
+    int fd = channel->fd();
+    assert(fd_to_channel_.find(fd) != fd_to_channel_.end());
+
+    poller_.delete_event(fd, WS_READABLE | WS_WRITABLE);
+
+    if(channel->is_enable_timeout()){
+        timeout_.remove(channel);
+    }
+    fd_to_channel_.erase(fd);
 }
 
 void EventLoop::handle_timeout_channels() {
     std::vector<std::shared_ptr<Channel>> channels = timeout_.get_timeout_channels();
     for(auto& channel: channels){
+        LOG_WARN << "timeout channel:" << channel->to_string();
+    }
+    for(auto& channel: channels){
         if(!channel->closed()){
-            channel->remove_self_from_loop();
-            channel->set_revents(EPOLLHUP);
-            channel->handle_event();
+            remove_channel(channel);
         }
-        timeout_.remove(channel);
     }
 }
-
 
 } // end namespace net
 } // namespace ws

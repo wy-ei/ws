@@ -20,13 +20,13 @@ bool TCPServer::listen(const std::string& host, unsigned short port) {
     bool success = server_socket_.bind({host, port});
     assert(success);
 
-    std::unique_ptr<ThreadPool> thread_pool(new ThreadPool(io_thread_num_));
 
+    std::unique_ptr<ThreadPool> thread_pool(new ThreadPool(io_thread_num_));
     for(size_t i=0;i<io_thread_num_;i++){
         thread_pool->enqueue([this](){
             auto loop = new EventLoop();
             event_loops_.push_back(loop);
-            loop->loop();
+            loop->start();
         });
     }
 
@@ -34,16 +34,18 @@ bool TCPServer::listen(const std::string& host, unsigned short port) {
     main_loop_->run_in_loop([this](){
         listen_internal();
     });
-
-    main_loop_->loop();
+    main_loop_->start();
     return true;
 }
 
 void TCPServer::listen_internal() {
+    main_loop_->assert_in_loop_thread();
     server_socket_.listen();
-    auto accept_channel_ = std::make_shared<Channel>(main_loop_, server_socket_.fd());
+    auto accept_channel_ = std::make_shared<Channel>(server_socket_.fd());
     accept_channel_->set_read_callback(std::bind(&TCPServer::handle_accept, this));
     accept_channel_->enable_reading();
+    accept_channel_->name = "accept channel";
+    main_loop_->add_channel(accept_channel_);
 }
 
 void TCPServer::handle_accept() {
@@ -52,7 +54,7 @@ void TCPServer::handle_accept() {
     if(client.fd() > 0){
         handle_new_connection(std::move(client));
     }else{
-        LOG_DEBUG << "accept failed";
+        LOG_ERROR << "accept failed";
     }
 }
 
@@ -60,16 +62,14 @@ void TCPServer::handle_new_connection(Socket client_sock) {
     auto loop = next_io_loop();
     auto conn = std::make_shared<Conn>(loop, std::move(client_sock), server_socket_.address());
 
-    connections_[conn->fd()] = conn;
-
-    conn->set_close_callback(std::bind(&TCPServer::remove_connection, this, conn));
-
-    if(connection_callback_){
-        conn->set_connect_callback(connection_callback_);
-    }else{
+    if(!connection_callback_){
         LOG_DEBUG << "no connection handle for: " << conn->socket().address();
+        return;
     }
-    loop->run_in_loop(std::bind(&Conn::init, conn));
+    connection_callback_(conn);
+
+    auto channel = conn->build_channel();
+    loop->enqueue(std::bind(&EventLoop::add_channel, loop, channel));
 }
 
 EventLoop* TCPServer::next_io_loop() {
@@ -82,17 +82,7 @@ EventLoop* TCPServer::next_io_loop() {
     return loop;
 }
 
-void TCPServer::remove_connection(const std::shared_ptr<Conn>& conn) {
-    LOG_DEBUG << "close connection - " << conn->fd();
-    main_loop_->run_in_loop([this, conn]{
-        if(connection_close_callback_){
-            connection_close_callback_(conn);
-        }
-        connections_.erase(conn->fd());
-        EventLoop* io_loop = conn->get_loop();
-        io_loop->enqueue(std::bind(&Conn::destroy, conn));
-    });
-}
+
 
 } // end namespace net
 } // namespace ws

@@ -13,6 +13,7 @@
 #include <sys/un.h>
 #include <ostream>
 #include <utility>
+#include "../base/noncopyable.h"
 
 namespace ws{
 namespace net{
@@ -31,7 +32,7 @@ struct SocketAddress{
 
 std::ostream& operator<<(std::ostream&, const SocketAddress&);
 
-class Socket{
+class Socket: public noncopyable{
     enum class State{
         k_connected, k_disconnected, k_listening
     };
@@ -46,9 +47,6 @@ public:
         }
     }
 
-    Socket(Socket&) = delete;
-    Socket(const Socket&) = delete;
-    Socket(const Socket&&) = delete;
     Socket(Socket&& sock) noexcept {
         swap(sock);
     }
@@ -61,8 +59,6 @@ public:
         std::swap(proto_, sock.proto_);
         std::swap(sock_, sock.sock_);
     }
-
-    Socket& operator=(const Socket&) = delete;
 
     Socket& operator=(Socket&& sock) noexcept{
         if (connected())
@@ -85,6 +81,7 @@ public:
     }
 
     SocketAddress address() const;
+    SocketAddress peer_address() const;
 
     ssize_t recv(char *data, size_t size);
     ssize_t send(const char* data, size_t size);

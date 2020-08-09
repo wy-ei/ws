@@ -1,46 +1,38 @@
-#include <sys/epoll.h>
-
 #include "Channel.h"
 #include "EventLoop.h"
+#include "Conn.h"
 
 namespace ws{
 namespace net{
 
-
-Channel::Channel(EventLoop *loop, int fd): loop_(loop), fd_(fd) {
+Channel::~Channel() {
+    conn->close_connection();
+    LOG_DEBUG << "channel die:" << fd_;
 }
 
-void Channel::handle_event() {
+void Channel::handle_event(uint32_t mask) {
     event_handling_ = true;
-
-    if((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)){
-        if(close_callback_) close_callback_();
+    if((mask & WS_READABLE & mask_) && read_callback_){
+        read_callback_();
     }
-
-    if(revents_ & EPOLLERR){
-        if(error_callback_) error_callback_();
+    if((mask & WS_WRITABLE & mask_) && write_callback_){
+        write_callback_();
     }
-
-    if(revents_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)){
-        if(read_callback_) read_callback_();
-    }
-
-    if(revents_ & EPOLLOUT){
-        if(write_callback_) write_callback_();
-    }
-
     event_handling_ = false;
 }
 
-void Channel::update() {
-    if(!closed()){
-        loop_->update_channel(shared_from_this());
-    }
-}
+std::string Channel::to_string() {
+    std::ostringstream os;
 
-void Channel::remove_self_from_loop() {
-    closed_ = true;
-    loop_->remove_channel(shared_from_this());
+    os << "channel: [name:" << name << "] [mask:";
+    if(mask_ & WS_READABLE){
+        os << "R";
+    }
+    if(mask_ & WS_WRITABLE){
+        os << "W";
+    }
+    os << "] [fd:" << fd() << "]";
+    return os.str();
 }
 
 

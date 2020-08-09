@@ -4,10 +4,11 @@
 
 #include <chrono>
 #include <algorithm>
+#include <execinfo.h>
+#include <unistd.h>
+
 #include "logging.h"
 #include "../base/Date.h"
-
-
 
 namespace ws {
 namespace logging {
@@ -72,11 +73,29 @@ void Logger::output_time() {
     stream_ << time_buffer;
 }
 
+void Logger::print_stack_trace() {
+    void *buffer[100];
+    char **strings;
+
+    int n = backtrace(buffer, 100);
+    strings = backtrace_symbols(buffer, n);
+
+    if (strings == nullptr) {
+        stream_ << "backtrace error:" << strerror(errno);
+    }else{
+        for (int i = 0; i < n; i++) {
+            stream_ << strings[i] << '\n';
+        }
+        free(strings);
+    }
+}
+
 Logger::~Logger() {
     stream_ << " - " << basename_ << ':' << line_ << '\n';
     std::string s = stream_.str();
     logging_output(s.data(), s.size());
     if (level_ == FATAL) {
+        print_stack_trace();
         logging_flush();
         abort();
     }
@@ -272,5 +291,3 @@ void stop_async_backend() {
 
 } // end namespace logging
 } // end namespace ws
-
-

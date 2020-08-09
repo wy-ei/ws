@@ -3,10 +3,8 @@
 //
 #include <cassert>
 #include <fcntl.h>
-#include <sys/sendfile.h>
 #include <cstdio>
 #include <sstream>
-#include <iostream>
 #include "Response.h"
 #include "imp.h"
 
@@ -127,7 +125,7 @@ void Response::add_default_headers() {
     }
 }
 
-bool Response::keep_alive() {
+bool Response::keep_alive() const {
     return get_header_value("Connection") == "Keep-Alive";
 }
 

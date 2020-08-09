@@ -57,13 +57,15 @@ std::ostream& operator<<(std::ostream& os, const SocketAddress& rhs){
 }
 
 Socket::~Socket() {
-    //::close(sock_);
+    if(sock_ >= 0){
+        ::close(sock_);
+    }
 }
 
 
 bool Socket::listen() {
     state_ = State::k_listening;
-    LOG_INFO << "listening: " << this->address();
+    LOG_INFO << "listening: " << this->address() << "  fd: " << fd();
     return ::listen(sock_, 5) == 0;
 }
 
@@ -144,7 +146,8 @@ Socket Socket::accept() {
         // TODO
     }
     Socket sock(this->family_, this->type_, 0, conn_fd);
-    LOG_DEBUG << "receive tcp connection from: " << sock.address();
+    sock.state_ = State::k_connected;
+    LOG_INFO << "receive tcp connection from: " << sock.peer_address() << "(fd:" << sock.fd() << ')';
     return sock;
 }
 
@@ -152,6 +155,13 @@ SocketAddress Socket::address() const{
     sockaddr_storage address{};
     socklen_t len = sizeof(address);
     getsockname(sock_, reinterpret_cast<sockaddr*>(&address), &len);
+    return SocketAddress(reinterpret_cast<sockaddr*>(&address));
+}
+
+SocketAddress Socket::peer_address() const{
+    sockaddr_storage address{};
+    socklen_t len = sizeof(address);
+    getpeername(sock_, reinterpret_cast<sockaddr*>(&address), &len);
     return SocketAddress(reinterpret_cast<sockaddr*>(&address));
 }
 
@@ -187,7 +197,6 @@ ssize_t Socket::send(const std::string &data) {
 }
 
 void Socket::shutdown(int how) {
-    //::shutdown(sock_, SHUT_RDWR);
     ::shutdown(sock_, how);
 }
 

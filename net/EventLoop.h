@@ -10,12 +10,13 @@
 #include <unordered_map>
 #include <string>
 #include <utility>
+#include <functional>
 #include <iostream>
 #include <atomic>
 #include <thread>
 #include <mutex>
 
-#include "EPoll.h"
+#include "poll/Poller.h"
 #include "Channel.h"
 #include "Timeout.h"
 
@@ -23,50 +24,49 @@ namespace ws{
 namespace net{
 
 
-class EventLoop;
-
-extern __thread EventLoop* this_thread_event_loop;
+extern thread_local EventLoop* thread_local_event_loop;
 
 class EventLoop {
-    using Functor = std::function<void()>;
+    using Task = std::function<void()>;
 public:
     EventLoop();
     ~EventLoop();
 
-    void loop();
+    void start();
+    void stop();
 
-    void quit();
+    void enqueue(Task cb);
+    void run_in_loop(Task cb);
+
+    void add_channel(std::shared_ptr<Channel> channel);
+    void remove_channel(std::shared_ptr<Channel> channel);
+    void update_channel(std::shared_ptr<Channel> channel);
 
     bool is_in_loop_thread();
-
-    void enqueue(Functor cb);
-    void run_in_loop(Functor cb);
-
-    void add_channel(const std::shared_ptr<Channel>& channel);
-    void remove_channel(const std::shared_ptr<Channel>& channel);
-    void update_channel(const std::shared_ptr<Channel>& channel);
-
     void assert_in_loop_thread();
 
-    void wakeup();
+    void wakeup() const;
 private:
-    void handle_read();
-    void run_pending_functors();
+    void run_pending_tasks();
     void handle_timeout_channels();
+    void setup_wakeup_channel();
 
     bool looping_ { false };
-    std::atomic<bool> quit_ { false };
-    std::atomic<bool> calling_pending_functors_ {false };
+    std::atomic<bool> stop_ { false };
+    std::atomic<bool> calling_pending_tasks_ {false };
 
-    std::mutex pending_functors_mutex_;
-    std::vector<Functor> pending_functors_;
+    std::mutex pending_tasks_mutex_;
+    std::vector<Task> pending_tasks_;
 
     int wakeup_fd_;
     std::shared_ptr<Channel> wakeup_channel_;
 
-    Timeout timeout_ { 5000 };
-    EPoll epoll_{};
-    typename std::thread::id tid_;
+    Timeout timeout_ { 3000 };
+    Poller poller_ {};
+
+    std::unordered_map<int, std::shared_ptr<Channel>> fd_to_channel_;
+
+    std::thread::id tid_;
 };
 
 } // end namespace net

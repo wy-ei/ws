@@ -13,50 +13,6 @@ namespace http{
 
 namespace imp{
 
-const char* find_content_type(const std::string &path,
-                  const std::unordered_map<std::string, std::string> &user_defined_dict) {
-    int i = path.rfind('.');
-    if(i == std::string::npos){
-        return nullptr;
-    }
-    std::string ext = path.substr(i + 1);
-
-    auto it = user_defined_dict.find(ext);
-    if (it != user_defined_dict.end()) {
-        return it->second.c_str();
-    }
-
-    if (ext == "txt") {
-        return "text/plain";
-    } else if (ext == "html" || ext == "htm") {
-        return "text/html";
-    } else if (ext == "css") {
-        return "text/css";
-    } else if (ext == "jpeg" || ext == "jpg") {
-        return "image/jpg";
-    } else if (ext == "png") {
-        return "image/png";
-    } else if (ext == "gif") {
-        return "image/gif";
-    } else if (ext == "svg") {
-        return "image/svg+xml";
-    } else if (ext == "ico") {
-        return "image/x-icon";
-    } else if (ext == "json") {
-        return "application/json";
-    } else if (ext == "pdf") {
-        return "application/pdf";
-    } else if (ext == "js") {
-        return "application/javascript";
-    } else if (ext == "wasm") {
-        return "application/wasm";
-    } else if (ext == "xml") {
-        return "application/xml";
-    } else if (ext == "xhtml") {
-        return "application/xhtml+xml";
-    }
-    return "text/plain";
-}
 
 const char *status_message(int status) {
     switch (status) {

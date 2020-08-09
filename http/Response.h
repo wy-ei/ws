@@ -56,7 +56,7 @@ public:
     int get_status(){
         return status_;
     }
-    bool keep_alive();
+    bool keep_alive() const;
     void reset();
 private:
     void flush_head();

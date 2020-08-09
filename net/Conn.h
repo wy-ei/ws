@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <atomic>
+#include <memory>
 #include "comm.h"
 #include "Socket.h"
 #include "../base/noncopyable.h"
@@ -29,7 +30,7 @@ class Conn : public std::enable_shared_from_this<Conn>, public noncopyable{
     **/
 
     enum class State:int{
-        k_connecting, k_connected, k_disconnecting, k_disconnected
+        k_connecting, k_connected, k_read_closed, k_disconnected
     };
 
 public:
@@ -37,41 +38,25 @@ public:
     using MessageCallback = std::function<void(const char*, size_t)>;
     using HighWaterMarkCallback = std::function<void(size_t)>;
     using TimeoutCallback = std::function<void(size_t)>;
-    using CloseCallback = std::function<void(const std::shared_ptr<Conn>&)>;
+    using CloseCallback = std::function<void(std::shared_ptr<Conn>)>;
     using ErrorCallback = std::function<void()>;
 public:
     Conn() = delete;
     Conn(EventLoop* loop, Socket sock, SocketAddress peer_address);
     ~Conn();
 
-    void init();
-    void destroy();
-    void shutdown();
+    void close_connection();
 
-    EventLoop* get_loop(){ return loop_; }
-
-    ssize_t read(char *buffer, size_t size);
     ssize_t write(const char* data, size_t size);
     int fd() const { return sock_.fd(); }
     const Socket& socket() const { return sock_; }
 
-
     bool connected() const { return state_ == State::k_connected; }
     bool disconnected() const { return state_ == State::k_disconnected; }
 
-    void handle_read();
-    void handle_write();
-    void handle_close();
-    void handle_error();
+    std::shared_ptr<Channel> build_channel();
 
-    void setup_channel();
-
-    void set_connect_callback(ConnectCallback callback){
-        connect_callback_ = std::move(callback);
-    }
-    void set_message_callback(MessageCallback callback){
-        message_callback_ = std::move(callback);
-    }
+    void set_message_callback(MessageCallback callback);
     void set_close_callback(CloseCallback callback){
         close_callback_ = std::move(callback);
     }
@@ -85,22 +70,27 @@ public:
     void* context(){ return context_; }
     void context(void* ctx) { context_ = ctx; }
 private:
-    ConnectCallback connect_callback_;
+    void handle_read();
+    void handle_write();
+    void close_read();
+
     MessageCallback message_callback_;
     HighWaterMarkCallback high_water_mark_callback_;
     TimeoutCallback timeout_callback_;
     CloseCallback close_callback_;
     ErrorCallback error_callback_;
 
-    EventLoop* loop_;
-    std::shared_ptr<Channel> channel_;
+    EventLoop* event_loop_;
+    std::weak_ptr<Channel> channel_;
     std::atomic<State> state_ { State::k_connecting };
 
     Socket sock_;
-    SocketAddress peer_address_;
+    SocketAddress server_address_;
     void* context_ { nullptr };
     Buffer write_buffer_;
 };
+
+
 
 } // end namespace net
 } // namespace ws

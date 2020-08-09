@@ -42,7 +42,7 @@ public:
 
         this->remove(channel);
 
-        list_.emplace_back(node);
+        list_.push_back(node);
         auto it = list_.end();
         map_[id] = --it;
     }
@@ -52,7 +52,7 @@ public:
         auto it = map_.find(id);
         if(it != map_.end()){
             list_.erase(it->second);
-            map_.erase(id);
+            map_.erase(it);
         }
     }
 
@@ -62,11 +62,9 @@ public:
         std::vector<std::shared_ptr<Channel>> channels;
         auto it = list_.begin();
         while(it != list_.end() && it->time_ < now){
-            map_.erase(it->channel_->fd());
             channels.push_back(it->channel_);
             it++;
         }
-
         return channels;
     }
 
@@ -77,7 +75,6 @@ private:
         auto duration_ms = duration_cast<milliseconds>(duration_ns);
         return duration_ms.count();
     }
-
 
     long timeout_ms_ { 5000 };
 

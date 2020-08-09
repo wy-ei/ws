@@ -11,7 +11,7 @@ using ws::assert_true;
 
 using namespace ws::base;
 
-int formdata_test(){
+void formdata_test(){
 //    ws::logging::set_level(ws::logging::INFO);
 
     TEST("formdata", []{
@@ -48,7 +48,7 @@ Content-Disposition: form-data; name="bar"
     });
 }
 
-int main_formdata_test(int argc, char* argv[]){
+void main_formdata_test(int argc, char* argv[]){
     //ws::logging::start_async_backend(argv[0]);
 
     formdata_test();

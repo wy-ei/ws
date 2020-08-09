@@ -2,8 +2,8 @@
 #define WS_CHANNEL_H
 
 #include <array>
-#include <sys/epoll.h>
 #include <atomic>
+#include <sstream>
 #include "comm.h"
 #include "../log/logging.h"
 
@@ -15,30 +15,20 @@ namespace net{
 class Channel: public std::enable_shared_from_this<Channel>{
     using EventCallback = std::function<void()>;
 public:
-public:
-    Channel(EventLoop*loop, int fd);
+    explicit Channel(int fd): fd_(fd){}
 
-    ~Channel(){
-        LOG_DEBUG << "channel die:" << fd_;
-    }
+    ~Channel();
 
-    void handle_event();
+    void handle_event(uint32_t mask);
 
-    void set_read_callback(EventCallback callback){
-        read_callback_ = std::move(callback);
+    void set_read_callback(const EventCallback& callback){
+        read_callback_ = callback;
     }
-    void set_write_callback(EventCallback callback){
-        write_callback_ = std::move(callback);
-    }
-    void set_close_callback(EventCallback callback){
-        close_callback_ = std::move(callback);
-    }
-    void set_error_callback(EventCallback callback){
-        error_callback_ = std::move(callback);
+    void set_write_callback(const EventCallback& callback){
+        write_callback_ = callback;
     }
 
     int fd() const { return fd_; }
-    int events() const { return events_; }
 
     bool is_enable_timeout(){
         return enable_timeout_;
@@ -50,37 +40,43 @@ public:
         enable_timeout_ = false;
     }
 
-
-    void set_events(int events){ events_ = events; }
-    void set_revents(int revents){ revents_ = revents; }
-
-    bool is_writing(){ return events_ & EPOLLOUT; }
-    bool is_reading(){ return events_ & EPOLLIN; }
-
-    void enable_writing(){ events_ |= EPOLLOUT; update(); }
-    void enable_reading(){ events_ |= EPOLLIN; update(); }
-    void disable_writing(){ events_ &= ~EPOLLOUT; update(); }
-    void disable_reading(){ events_ &= ~EPOLLIN; update(); }
-
-    void disable_all(){ events_ = 0; update(); }
-
-    void remove_self_from_loop();
+    bool is_enable_writing() const{
+        return mask_ & WS_WRITABLE;
+    }
+    bool is_enable_reading() const{
+        return mask_ & WS_READABLE;
+    }
+    void enable_writing(){
+        mask_ |= WS_WRITABLE;
+    }
+    void enable_reading(){
+        mask_ |= WS_READABLE;
+    }
+    void disable_writing(){
+        mask_ &= ~WS_WRITABLE;
+    }
+    void disable_reading(){
+        mask_ &= ~WS_READABLE;
+    }
 
     bool closed() const { return closed_; }
+    void close() {
+        closed_ = true;
+    }
+    std::shared_ptr<Conn> conn;
+    std::string name;
+    std::string to_string();
 private:
-    void update();
-
-    EventLoop* loop_;
     const int fd_;
+    uint32_t mask_  { 0 };
+
     bool closed_ { false };
     std::atomic<bool> event_handling_ { false };
-    int revents_ { 0 };
-    int events_ { 0 };
 
     EventCallback read_callback_;
     EventCallback write_callback_;
-    EventCallback close_callback_;
-    EventCallback error_callback_;
+//    EventCallback close_callback_;
+//    EventCallback error_callback_;
 
     bool enable_timeout_ { false };
 };
