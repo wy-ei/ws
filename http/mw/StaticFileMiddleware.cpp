@@ -36,8 +36,11 @@ void StaticFileMiddleware::call(Request &req, Response &res) {
         }
         // if is file
         if(S_ISREG(st.st_mode)){
+#ifdef __APPLE__
             Date file_modified_date(st.st_mtimespec.tv_sec);
-
+#else
+            Date file_modified_date(st.st_mtime.tv_sec);
+#endif
             if(req.has_header("If-Modified-Since")){
                 std::string modified_since_str = req.get_header_value("If-Modified-Since");
                 Date last_modified_date = Date::from_utc_string(modified_since_str);

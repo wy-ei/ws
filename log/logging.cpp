@@ -44,6 +44,17 @@ std::shared_ptr<Logging> p_logging;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
+const char* basename(const char* path){
+    const char* p = path;
+    const char* i = path;
+    while(*p != '\0'){
+        if(*p == '/'){
+            i = p+1;
+        }
+        p++;
+    }
+    return i;
+}
 
 Logger::Logger(const char *file, int line, ws::logging::LEVEL level)
     : level_(level), line_(line) {
@@ -51,9 +62,7 @@ Logger::Logger(const char *file, int line, ws::logging::LEVEL level)
         stream_ << std::this_thread::get_id();
         stream_ << LevelName[level];
 
-        char buffer[100];
-        basename_r(file, buffer);
-        basename_.append(buffer);
+        basename_.append(basename(file));
     }
 
 void Logger::output_time() {

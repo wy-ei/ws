@@ -12,11 +12,12 @@ int main(int argc, char* argv[]) {
     // ws::logging::start_async_backend(argv[0]);
     ws::logging::set_level(ws::logging::INFO);
 
-    // 创建一个 http server，1 个线程做 accept，8 个线程处理请求
-    HTTPServer server(/* thread num */8);
+    // 创建一个 http server，用 8 个线程处理请求
+    HTTPServer server(8);
 
     // 添加一个中间件用来处理静态文件
     auto sfm = std::make_shared<StaticFileMiddleware>();
+    // 请根据自己的环境修改一下路径
     sfm->add_static_file_dir("/Users/wangyu/code/blog/_site");
     server.use(sfm);
 
@@ -26,12 +27,7 @@ int main(int argc, char* argv[]) {
         std::string text;
         if(req.is_multipart_form_data() && req.form_data.has("foo")){
             const FormDataItem& item = req.form_data.get("foo");
-
-            std::ostringstream os;
-            os << "name:" << item.name;
-            os << "content-type:" << item.content_type;
-            os << "content:" << item.content;
-            text = os.str();
+            text = item.content;
         }else{
             text = "<null>";
         }
@@ -41,13 +37,9 @@ int main(int argc, char* argv[]) {
 
     // 处理 get 请求 /hello?name=world
     server.use("GET", "/hello", [](Request &req, Response &res) {
-        std::string name;
-        if(req.query.find("name") != req.query.end()){
-            name = req.query["name"];
-        }else{
-            name = "world";
-        }
+        std::string name =  req.query["name"];
         std::string text = "hello " + name;
+
         res.set_status(200);
         res.write(text);
         res.end();
@@ -56,4 +48,3 @@ int main(int argc, char* argv[]) {
     // 在 8006 端口上启动 server
     server.listen("0.0.0.0", 8006);
 }
-
