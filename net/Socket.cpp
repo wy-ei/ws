@@ -88,7 +88,7 @@ bool Socket::bind(const SocketAddress& address) {
     }
 
     for(addrinfo *p = result; p; p = p->ai_next){
-        int true_ = 1;
+        char true_ = 1;
         setsockopt(sock_, SOL_SOCKET, SO_REUSEPORT, static_cast<void*>(&true_), sizeof(true_));
 
         if(::bind(sock_, p->ai_addr, p->ai_addrlen) == 0){
@@ -122,7 +122,7 @@ bool Socket::connect(const SocketAddress& address) {
 }
 
 Socket Socket::accept() {
-    sockaddr_in address{};
+    sockaddr_storage address{};
     socklen_t len = sizeof(sockaddr_in);
     int conn_fd;
 
@@ -147,7 +147,7 @@ Socket Socket::accept() {
     }
     Socket sock(this->family_, this->type_, 0, conn_fd);
     sock.state_ = State::k_connected;
-    LOG_INFO << "receive tcp connection from: " << sock.peer_address() << "(fd:" << sock.fd() << ')';
+    LOG_INFO << "receive tcp connection from: " << SocketAddress(reinterpret_cast<sockaddr*>(&address)) << "(fd:" << sock.fd() << ')';
     return sock;
 }
 

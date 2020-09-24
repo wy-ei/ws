@@ -39,13 +39,10 @@ private:
     size_t io_thread_num_ { 1 };
     std::atomic<bool> running_ {false};
 
-    std::unordered_map<int, std::shared_ptr<Conn>> connections_;
     ConnectionCallback connection_callback_;
-    ConnectionCallback connection_close_callback_;
 
     std::string host_;
     unsigned short port_ { 0 };
-    std::string name_;
 };
 
 
