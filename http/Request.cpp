@@ -6,8 +6,8 @@
 #include <regex>
 
 
-#include "../log/logging.h"
-#include "../utils/str.h"
+#include "log/logging.h"
+#include "utils/str.h"
 #include "imp.h"
 #include "Request.h"
 #include "FormData.h"

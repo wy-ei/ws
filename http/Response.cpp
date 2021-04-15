@@ -7,6 +7,7 @@
 #include <sstream>
 #include "Response.h"
 #include "imp.h"
+#include "log/logging.h"
 
 namespace ws{
 namespace http{

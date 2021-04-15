@@ -5,8 +5,8 @@
 #include "TCPServer.h"
 
 #include "Socket.h"
-#include "../base/ThreadPool.h"
-#include "../log/logging.h"
+#include "base/ThreadPool.h"
+#include "log/logging.h"
 
 
 namespace ws{

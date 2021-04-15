@@ -13,7 +13,7 @@
 #include <sys/un.h>
 #include <ostream>
 #include <utility>
-#include "../base/noncopyable.h"
+#include "base/noncopyable.h"
 
 namespace ws{
 namespace net{

@@ -4,8 +4,8 @@
 #include <array>
 #include <atomic>
 #include <sstream>
-#include "comm.h"
-#include "../log/logging.h"
+#include "net/comm.h"
+#include "log/logging.h"
 
 
 namespace ws{

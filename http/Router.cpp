@@ -3,9 +3,9 @@
 //
 
 #include "Router.h"
-#include "../log/logging.h"
-#include "../utils/path.h"
-#include "../utils/str.h"
+#include "log/logging.h"
+#include "utils/path.h"
+#include "utils/str.h"
 
 namespace ws{
 namespace http{

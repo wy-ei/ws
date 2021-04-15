@@ -10,8 +10,8 @@
 #include <memory>
 #include "comm.h"
 #include "Socket.h"
-#include "../base/noncopyable.h"
-#include "../base/Buffer.h"
+#include "base/noncopyable.h"
+#include "base/Buffer.h"
 
 
 namespace ws{

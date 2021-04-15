@@ -5,12 +5,12 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-#include "StaticFileMiddleware.h"
-#include "../../log/logging.h"
-#include "../../utils/path.h"
-#include "../Response.h"
-#include "../Request.h"
-#include "../../base/Date.h"
+#include "http/mw/StaticFileMiddleware.h"
+#include "log/logging.h"
+#include "utils/path.h"
+#include "http/Response.h"
+#include "http/Request.h"
+#include "base/Date.h"
 
 namespace ws{
 namespace http{

@@ -6,10 +6,10 @@
 #define WS_FORMDATA_H
 
 #include <utility>
-
-#include "comm.h"
-#include "../base/Buffer.h"
-#include "../base/except.h"
+#include <ostream>
+#include "http/comm.h"
+#include "base/Buffer.h"
+#include "base/except.h"
 
 
 namespace ws{

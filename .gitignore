@@ -8,3 +8,5 @@ ws
 Makefile
 *.log
 ws.cbp
+build/*
+.vscode/

@@ -5,9 +5,16 @@
 #include "http/mw/StaticFileMiddleware.h"
 #include "log/logging.h"
 
+#include <iostream>
+
 using namespace ws::http;
 
 int main(int argc, char* argv[]) {
+#if DDD == 1
+std::cout << "ddd 1\n";
+#endif
+
+
     // 启动异步日志模块，如果不启动，日志会打印到 stdout 上
     // ws::logging::start_async_backend(argv[0]);
     ws::logging::set_level(ws::logging::INFO);

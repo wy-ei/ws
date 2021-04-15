@@ -5,7 +5,7 @@
 #ifndef WS_MIDDLEWARE_H
 #define WS_MIDDLEWARE_H
 
-#include "../comm.h"
+#include "http/comm.h"
 
 namespace ws{
 namespace http{

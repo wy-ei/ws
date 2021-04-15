@@ -2,23 +2,19 @@
 // Created by wangyu on 2020/7/3.
 //
 
-#include "../utils/test.h"
-#include "../log/logging.h"
-#include "../http/FormData.h"
+#include <gtest/gtest.h>
 
-using ws::TEST;
-using ws::assert_true;
+#include "log/logging.h"
+#include "http/FormData.h"
 
 using namespace ws::base;
+using namespace ws::http;
 
-void formdata_test(){
-//    ws::logging::set_level(ws::logging::INFO);
+TEST(FormData, formdata){
+    FormData form_data;
+    Buffer buffer;
 
-    TEST("formdata", []{
-        ws::http::FormData form_data;
-        Buffer buffer;
-
-        std::string s = R"__(------WebKitFormBoundaryeOeWcRvkpBvpFDtA
+    std::string s = R"__(------WebKitFormBoundaryeOeWcRvkpBvpFDtA
 Content-Disposition: form-data; name="foo"
 
 123
@@ -30,27 +26,21 @@ Content-Disposition: form-data; name="bar"
 ------WebKitFormBoundaryeOeWcRvkpBvpFDtA--
 )__";
 
-        ws::http::MultipartFormDataParser parser(form_data);
-        parser.set_boundary("----WebKitFormBoundaryeOeWcRvkpBvpFDtA");
+    
+    ws::http::MultipartFormDataParser parser(form_data);
+    parser.set_boundary("----WebKitFormBoundaryeOeWcRvkpBvpFDtA");
+    buffer.append(s.data(), s.size());
+    EXPECT_TRUE(parser.parse(buffer));
 
-        int i = 0;
-        while(i < s.size()){
-            buffer.append(&s[i], 1);
-            i++;
-            bool finished = parser.parse(buffer);
-            if(finished){
-                LOG_INFO << "finished";
-                break;
-            }
-        }
+    FormDataItem item = form_data.get("name");
 
-        LOG_DEBUG << '\n' << " finished: " << " is_valid " << parser.is_valid() << form_data;
-    });
+    LOG_DEBUG << item.content;
+
+    EXPECT_TRUE(true);
+
 }
 
-void main_formdata_test(int argc, char* argv[]){
-    //ws::logging::start_async_backend(argv[0]);
-
-    formdata_test();
-
+int main(int argc, char** argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }

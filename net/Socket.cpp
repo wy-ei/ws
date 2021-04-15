@@ -3,7 +3,7 @@
 //
 
 #include "Socket.h"
-#include "../log/logging.h"
+#include "log/logging.h"
 #include <thread>
 #include <stdexcept>
 

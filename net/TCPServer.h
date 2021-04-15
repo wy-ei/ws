@@ -5,7 +5,7 @@
 #ifndef WS_TCPSERVER_H
 #define WS_TCPSERVER_H
 
-#include "comm.h"
+#include "net/comm.h"
 
 #include <atomic>
 #include "Socket.h"

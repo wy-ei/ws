@@ -2,8 +2,87 @@ cmake_minimum_required(VERSION 3.5)
 project(ws)
 
 set(CMAKE_CXX_STANDARD 11)
+set(BIN_NAME ws)
 
-add_executable(ws http/HTTPServer.cpp utils/test.cpp http/HTTPServer.h net/comm.h base/ThreadPool.h http/Request.cpp http/Request.h http/Response.cpp http/Response.h http/Router.cpp http/Router.h http/imp.cpp http/imp.h ws.cpp http/mw/Middleware.cpp http/mw/Middleware.h utils/path.cpp utils/path.h net/Channel.cpp net/Channel.h net/Socket.h net/Socket.cpp net/Timeout.h base/Buffer.cpp base/Buffer.h net/TCPServer.cpp net/TCPServer.h net/EventLoop.cpp net/EventLoop.h net/poll/poller_select.cpp http/Context.cpp http/Context.h net/Conn.cpp net/Conn.h test/socket-test.cpp utils/str.cpp utils/str.h log/logging.h test/log-test.cpp log/logging.cpp http/comm.h base/noncopyable.h utils/perf.h test/pref-test.cpp http/FormData.cpp http/FormData.h test/formdata-test.cpp base/except.h base/Date.cpp base/Date.h net/poll/Poller.h net/poll/poller_epoll.cpp http/mw/StaticFileMiddleware.cpp http/mw/StaticFileMiddleware.h)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+
+include_directories(${PROJECT_SOURCE_DIR})
+
+
+file(GLOB BASE_SRC "base/*.cpp")
+file(GLOB NET_SRC "net/*.cpp" "net/**/*.cpp")
+file(GLOB HTTP_SRC "http/**/*.cpp" "http/*.cpp")
+file(GLOB LOG_SRC "log/*.cpp")
+file(GLOB UTILS_SRC "utils/*.cpp")
+
+add_library(net STATIC
+    ${BASE_SRC}
+    ${NET_SRC}
+    ${LOG_SRC}
+    ${UTILS_SRC}
+)
+
+set(HEADER_DIRS
+    ${PROJECT_SOURCE_DIR}/base
+    ${PROJECT_SOURCE_DIR}/net
+    ${PROJECT_SOURCE_DIR}/log
+    ${PROJECT_SOURCE_DIR}/utils
+)
+
+target_include_directories(net
+    PUBLIC
+        ${HEADER_DIRS}
+)
+
+add_executable(${BIN_NAME} ws.cpp ${HTTP_SRC})
+target_include_directories(${BIN_NAME}  PUBLIC
+    ${PROJECT_SOURCE_DIR}/http
+
+)
 
 find_package(Threads REQUIRED)
-target_link_libraries(ws Threads::Threads)
+target_link_libraries(${BIN_NAME} Threads::Threads)
+target_link_libraries(${BIN_NAME} net)
+
+
+# Coverage
+set(TARGET_NAME "ws")
+add_custom_target(${TARGET_NAME}-ccov-preprocessing
+    COMMAND LLVM_PROFILE_FILE=${TARGET_NAME}.profraw $<TARGET_FILE:${TARGET_NAME}>
+    COMMAND llvm-profdata merge -sparse ${TARGET_NAME}.profraw -o ${TARGET_NAME}.profdata
+    DEPENDS ${TARGET_NAME})
+
+##############################################
+# install
+install(TARGETS ${BIN_NAME} DESTINATION bin)
+
+target_compile_definitions(${BIN_NAME} PRIVATE DDD)
+
+
+#############################################
+# Unit tests
+
+add_subdirectory(third_party/googletest)
+
+# enable CTest testing
+enable_testing()
+
+# Add a testing executable
+
+function(ws_test test_file)
+    get_filename_component(test_target_name "${test_file}" NAME_WE)
+    message(STATUS "${test_file}")
+
+    add_executable("${test_target_name}" "${test_file}")
+    target_link_libraries("${test_target_name}" net gtest)
+
+    add_test(NAME "${test_target_name}" COMMAND "${EXECUTABLE_OUTPUT_PATH}/${test_target_name}")
+endfunction(ws_test)
+
+
+ws_test("test/socket-test.cpp")
+ws_test("test/formdata-test.cpp")
+
+

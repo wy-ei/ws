@@ -12,12 +12,12 @@
 #include <memory>
 #include <list>
 
-#include "comm.h"
-#include "mw/Middleware.h"
+#include "http/comm.h"
+#include "http/mw/Middleware.h"
 #include "Request.h"
 #include "Response.h"
 #include "Router.h"
-#include "../net/TCPServer.h"
+#include "net/TCPServer.h"
 #include "Context.h"
 
 namespace ws{

@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "logging.h"
-#include "../base/Date.h"
+#include "base/Date.h"
 
 namespace ws {
 namespace logging {

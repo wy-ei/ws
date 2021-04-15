@@ -9,14 +9,14 @@
 #include <memory>
 #include <utility>
 
-#include "./comm.h"
-#include "../base/Buffer.h"
-#include "../net/Conn.h"
+#include "http/comm.h"
+#include "base/Buffer.h"
+#include "net/Conn.h"
 #include "Request.h"
 #include "Response.h"
 #include "Router.h"
-#include "mw/Middleware.h"
-#include "../log/logging.h"
+#include "http/mw/Middleware.h"
+#include "log/logging.h"
 
 namespace ws{
 namespace http{

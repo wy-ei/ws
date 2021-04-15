@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-#include "HTTPServer.h"
-#include "mw/Middleware.h"
+#include "http/HTTPServer.h"
+#include "http/mw/Middleware.h"
 
 namespace ws{
 namespace http{

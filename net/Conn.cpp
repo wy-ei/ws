@@ -6,7 +6,7 @@
 #include <utility>
 #include "EventLoop.h"
 #include "Conn.h"
-#include "../log/logging.h"
+#include "log/logging.h"
 
 namespace ws{
 namespace net{
