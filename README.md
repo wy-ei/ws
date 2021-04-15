@@ -66,7 +66,9 @@ int main(int argc, char* argv[]) {
 可以使用下面几行命令即可编译并运行，我是使用 CLion 来开发的。
 
 ```
-$ cmake CMakeLists.txt
+$ mkdir build
+$ cd build
+$ cmake ..
 $ make
 $ ./ws
 ```
